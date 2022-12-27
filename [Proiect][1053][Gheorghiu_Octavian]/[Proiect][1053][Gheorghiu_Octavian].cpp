@@ -1,7 +1,3 @@
-//Am realizat proiectul cu case pentru putea urmari cate o clasa individual
-//
-//
-//pentru fiecare clasa comenzile cin sunt comentate
 #include <iostream>
 #include <string>
 #define _CRT_SECURE_NO_WARNINGS
@@ -13,31 +9,31 @@ class ProdusGolf {
 private:
 	static int idProdusCurent;
 	const int idProdus;
-	char* numeProdus=nullptr;
-	int numarDimensiuni=0;
+	char* numeProdus = nullptr;
+	int numarDimensiuni = 0;
 	float vanzari[3] = { 0,0,0 };
-	float* dimensiune=nullptr;
-	float* pret=nullptr;
+	float* dimensiune = nullptr;
+	float* pret = nullptr;
 public:
 	ProdusGolf() :idProdus(idProdusCurent) {
 		this->idProdusCurent++;
 		this->numeProdus = new char[4];
 		strcpy(this->numeProdus, "N/A");
 	}
-	
+
 	ProdusGolf(char* numeProdus) : idProdus(idProdusCurent) {
 		this->idProdusCurent++;
 		if (numeProdus != nullptr) {
 			this->numeProdus = new char[strlen(numeProdus) + 1];
 			strcpy(this->numeProdus, numeProdus);
 		}
-		
+
 		else {
 			this->numeProdus = new char[4];
 			strcpy(this->numeProdus, "N/A");
 		}
 	}
-	
+
 	ProdusGolf(char* numeProdus, int numarDimensiuni, float* dimensiune, float* pret, float* vanzari) : idProdus(idProdusCurent) {
 		this->idProdusCurent++;
 		if (numeProdus != nullptr) {
@@ -48,7 +44,7 @@ public:
 			this->numeProdus = new char[4];
 			strcpy(this->numeProdus, "N/A");
 		}
-		if (numarDimensiuni != 0 && dimensiune!=nullptr && pret!=nullptr) {
+		if (numarDimensiuni != 0 && dimensiune != nullptr && pret != nullptr) {
 			this->numarDimensiuni = numarDimensiuni;
 			this->dimensiune = new float[this->numarDimensiuni];
 			this->pret = new float[this->numarDimensiuni];
@@ -59,7 +55,7 @@ public:
 		}
 		for (int i = 0; i < 3; i++)
 			this->vanzari[i] = vanzari[i];
-		
+
 	}
 
 	ProdusGolf(const ProdusGolf& p) :idProdus(p.idProdus) {
@@ -134,8 +130,8 @@ public:
 
 	ProdusGolf& operator++() {
 		if (this->numarDimensiuni > 0 && this->pret != nullptr) {
-			for (int i = 0; i < this-> numarDimensiuni; i++)
-				this->pret[i] = this-> pret[i] + 0.1 * this->pret[i];
+			for (int i = 0; i < this->numarDimensiuni; i++)
+				this->pret[i] = this->pret[i] + 0.1 * this->pret[i];
 		}
 		return *this;
 	}
@@ -143,17 +139,17 @@ public:
 	ProdusGolf operator++(int x) {
 		ProdusGolf copie = *this;
 		if (this->numarDimensiuni > 0 && this->pret != nullptr) {
-			for (int i = 0; i < this -> numarDimensiuni; i++)
+			for (int i = 0; i < this->numarDimensiuni; i++)
 				this->pret[i] = this->pret[i] + 0.1 * this->pret[i];
 		}
 		return copie;
 	}
 
 	ProdusGolf& operator+=(float vanzare) {
-		if(vanzare>=0){
-		this->vanzari[0] = this->vanzari[1];
-		this->vanzari[1] = vanzari[2];
-		this->vanzari[2] = vanzare;
+		if (vanzare >= 0) {
+			this->vanzari[0] = this->vanzari[1];
+			this->vanzari[1] = vanzari[2];
+			this->vanzari[2] = vanzare;
 		}
 		return *this;
 	}
@@ -171,21 +167,21 @@ public:
 	bool operator!() {
 		if (this->numarDimensiuni == 0 && this->dimensiune == nullptr && this->pret == nullptr)
 			return true;
-		else 
+		else
 			return false;
 	}
 
 	explicit operator float() {
-		return this->vanzari[this->numarDimensiuni-1];
+		return this->vanzari[this->numarDimensiuni - 1];
 	}
 
 	friend ostream& operator<<(ostream& out, const ProdusGolf& p) {
 		out << "\n****";
 		out << "\nid: " << p.idProdus;
-		if(p.numeProdus==nullptr)
-		out << "\nNume produs: N/A";
+		if (p.numeProdus == nullptr)
+			out << "\nNume produs: N/A";
 		else
-		out << "\nNume produs: " << p.numeProdus;
+			out << "\nNume produs: " << p.numeProdus;
 		out << "\nNumar dimensiuni: " << p.numarDimensiuni;
 		if (p.numarDimensiuni > 0 && p.dimensiune != nullptr && p.pret != nullptr) {
 			for (int i = 0; i < p.numarDimensiuni; i++) {
@@ -222,11 +218,11 @@ public:
 		in >> p.vanzari[0];
 		in >> p.vanzari[1];
 		in >> p.vanzari[2];
-		
+
 		return in;
 	}
-	
-	~ProdusGolf(){
+
+	~ProdusGolf() {
 		if (this->numeProdus != nullptr)
 			delete[] this->numeProdus;
 		if (this->dimensiune != nullptr)
@@ -296,27 +292,27 @@ public:
 	}
 
 	Teren operator=(const Teren& t) {
-			if (this != &t) {
-				if (t.numeTeren != nullptr) {
-					if (this->numeTeren != nullptr);
-					delete[]this->numeTeren;
-					this->numeTeren = new char[strlen(t.numeTeren) + 1];
-					strcpy(this->numeTeren, t.numeTeren);
-				}
-				this->par = t.par;
-				for (int i = 0; i < 3; i++)
-					this->numarObstacole[i] = t.numarObstacole[i];
-				if (t.numarHoleInOne > 0 && t.numeSportivi != nullptr) {
-					this->numarHoleInOne = t.numarHoleInOne;
-					if (this->numeSportivi != nullptr)
-						delete[]this->numeSportivi;
-					this->numeSportivi = new string[this->numarHoleInOne];
-					for (int i = 0; i < this->numarHoleInOne; i++)
-						this->numeSportivi[i] = t.numeSportivi[i];
-				}
+		if (this != &t) {
+			if (t.numeTeren != nullptr) {
+				if (this->numeTeren != nullptr);
+				delete[]this->numeTeren;
+				this->numeTeren = new char[strlen(t.numeTeren) + 1];
+				strcpy(this->numeTeren, t.numeTeren);
 			}
-			return *this;
+			this->par = t.par;
+			for (int i = 0; i < 3; i++)
+				this->numarObstacole[i] = t.numarObstacole[i];
+			if (t.numarHoleInOne > 0 && t.numeSportivi != nullptr) {
+				this->numarHoleInOne = t.numarHoleInOne;
+				if (this->numeSportivi != nullptr)
+					delete[]this->numeSportivi;
+				this->numeSportivi = new string[this->numarHoleInOne];
+				for (int i = 0; i < this->numarHoleInOne; i++)
+					this->numeSportivi[i] = t.numeSportivi[i];
+			}
 		}
+		return *this;
+	}
 
 	int numarTotalObstacole() {
 		int total = 0;
@@ -430,6 +426,7 @@ public:
 	}
 };
 int Teren::idTerenCurent = 1;
+
 
 class Jucator {
 private:
@@ -688,8 +685,8 @@ public:
 			strcpy(this->numeCampionat, numeCampionat);
 		}
 		else {
-		this->numeCampionat = new char[10];
-		strcpy(this->numeCampionat, "Campionat");
+			this->numeCampionat = new char[10];
+			strcpy(this->numeCampionat, "Campionat");
 		}
 		if (numarTerenuri > 0 && terenuri != nullptr) {
 			this->numarTerenuri = numarTerenuri;
@@ -904,6 +901,8 @@ private:
 	Teren* terenuri = nullptr;
 	int numarCampionate = 0;
 	Campionat* campionate = nullptr;
+	int numarProduse = 0;
+	ProdusGolf* produse = nullptr;
 public:
 	GolfClub() :idGolfClub(idGolfClubCurent) {
 		this->idGolfClubCurent++;
@@ -911,7 +910,7 @@ public:
 		strcpy(this->numeClub, "Club de golf");
 	}
 
-	GolfClub(char* numeClub, int* preturi, int numarJucatori, Jucator* jucatori, int numarTerenuri, Teren* terenuri, int numarCampionate, Campionat* campionate) :idGolfClub(idGolfClubCurent) {
+	GolfClub(char* numeClub, int* preturi, int numarJucatori, Jucator* jucatori, int numarTerenuri, Teren* terenuri, int numarCampionate, Campionat* campionate, int numarProduse, ProdusGolf* produse) :idGolfClub(idGolfClubCurent) {
 		this->idGolfClubCurent++;
 		if (numeClub != nullptr) {
 			this->numeClub = new char[strlen(numeClub) + 1];
@@ -937,7 +936,12 @@ public:
 			for (int i = 0; i < this->numarCampionate; i++)
 				this->campionate[i] = campionate[i];
 		}
-
+		if (numarProduse > 0 && produse != nullptr) {
+			this->numarProduse = numarProduse;
+			this->produse = new ProdusGolf[this->numarProduse];
+			for (int i = 0; i < this->numarProduse; i++)
+				this->produse[i] = produse[i];
+		}
 	}
 
 	GolfClub(const GolfClub& g) :idGolfClub(g.idGolfClub) {
@@ -964,6 +968,12 @@ public:
 			this->campionate = new Campionat[this->numarCampionate];
 			for (int i = 0; i < this->numarCampionate; i++)
 				this->campionate[i] = g.campionate[i];
+		}
+		if (g.numarProduse > 0 && g.produse != nullptr) {
+			this->numarProduse = g.numarProduse;
+			this->produse = new ProdusGolf[this->numarProduse];
+			for (int i = 0; i < this->numarProduse; i++)
+				this->produse[i] = g.produse[i];
 		}
 	}
 
@@ -1000,6 +1010,12 @@ public:
 				this->campionate = new Campionat[this->numarCampionate];
 				for (int i = 0; i < this->numarCampionate; i++)
 					this->campionate[i] = g.campionate[i];
+			}
+			if (g.numarProduse > 0 && g.produse != nullptr) {
+				this->numarProduse = g.numarProduse;
+				this->produse = new ProdusGolf[this->numarProduse];
+				for (int i = 0; i < this->numarProduse; i++)
+					this->produse[i] = g.produse[i];
 			}
 		}
 		return *this;
@@ -1050,10 +1066,14 @@ public:
 		if (g.numarTerenuri > 0 && g.terenuri != nullptr)
 			for (int i = 0; i < g.numarTerenuri; i++)
 				out << "\n" << i + 1 << ". " << g.terenuri[i];
-		out << "\nNumar campionate" << g.numarCampionate;
+		out << "\nNumar campionate: " << g.numarCampionate;
 		if (g.numarCampionate > 0 && g.campionate != nullptr)
 			for (int i = 0; i < g.numarCampionate; i++)
 				out << "\n" << i + 1 << ". " << g.campionate[i];
+		out << "\nNumar Produse: " << g.numarProduse;
+		if (g.numarProduse > 0 && g.produse != nullptr)
+			for (int i = 0; i < g.numarProduse; i++)
+				out << "\n" << i + 1 << ". " << g.produse[i];
 		return out;
 	}
 
@@ -1069,6 +1089,7 @@ public:
 		cout << "\nPretul pe 1 luna respectiv 12 luni";
 		in >> g.preturi[0];
 		in >> g.preturi[1];
+
 		cout << "\nnumar Jucatori: ";
 		in >> g.numarJucatori;
 		if (g.numarJucatori > 0) {
@@ -1104,6 +1125,19 @@ public:
 				in >> g.campionate[i];
 			}
 		}
+
+		cout << "\nNumar produse: ";
+		in >> g.numarProduse;
+		if (g.numarProduse > 0) {
+			if (g.produse != nullptr)
+				delete[]g.produse;
+			g.produse = new ProdusGolf[g.numarProduse];
+			for (int i = 0; i < g.numarProduse; i++) {
+				cout << "\n\n--PRODUSUL " << i + 1 << "--";
+				in >> g.produse[i];
+			}
+		}
+
 		return in;
 	}
 
@@ -1116,6 +1150,8 @@ public:
 			delete[]this->terenuri;
 		if (this->campionate != nullptr)
 			delete[]this->campionate;
+		if (this->produse != nullptr)
+			delete[]this->produse;
 	}
 };
 int GolfClub::idGolfClubCurent = 1;
@@ -1137,7 +1173,7 @@ int main()
 		char numeProdus2[20];
 		strcpy(numeProdus2, "minge de golf");
 		float vanzari[3] = { 230,400,150 };
-		float dimensiuni[3] = {1,2,3};
+		float dimensiuni[3] = { 1,2,3 };
 		float pret[3] = { 5.5,10,14.5 };
 		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
 		cout << p2;
@@ -1146,7 +1182,7 @@ int main()
 		char numeProdus3[20];
 		strcpy(numeProdus3, "crosa de golf");
 		float vanzari2[3] = { 500,450,700 };
-		float dimensiuni2[4] = { 4,6,8,12};
+		float dimensiuni2[4] = { 4,6,8,12 };
 		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
 		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
 		cout << p4;
@@ -1159,9 +1195,9 @@ int main()
 		char numeNou[20] = "Masina de golf";
 		p1.setNumeProdus(numeNou);
 		cout << p1;
-		cout << p2.profitProdus()<<endl;
+		cout << p2.profitProdus() << endl;
 		cout << p4.profitProdus() << endl;
-		if(p2>p4)
+		if (p2 > p4)
 			cout << p2.profitProdus() << endl;
 		else
 			cout << p4.profitProdus() << endl;
@@ -1169,7 +1205,7 @@ int main()
 		p2++;
 		cout << p2;
 		float ultimaVanzare = 0;
-		ultimaVanzare =(float)p2;
+		ultimaVanzare = (float)p2;
 		cout << ultimaVanzare;
 		cout << p3 + 333;
 		break;
@@ -1203,7 +1239,7 @@ int main()
 		int numarTotal = (int)t2;
 		cout << endl << numarTotal;
 		cout << endl;
-		break; 
+		break;
 	}
 	case 3: {
 		Jucator j1;
@@ -1236,7 +1272,7 @@ int main()
 		int ultimaMedie = (int)j2;
 		cout << endl << ultimaMedie;
 		cout << endl << j2[2];
-		break; 
+		break;
 	}
 	case 4: {
 		cout << "\n\n--------------------------------\n\tClasa Campionat";
@@ -1405,8 +1441,9 @@ int main()
 		Teren terenuri2[3] = { t1,t2,t3 };
 		Jucator jucatori1[2] = { j2,j4 };
 		Campionat campionate1[2] = { c2,c3 };
+		ProdusGolf produse1[2] = { p1,p2 };
 		int preturi[2] = { 60,550 };
-		GolfClub g2(numeClub1, preturi, 2, jucatori1, 3, terenuri2, 2, campionate1);
+		GolfClub g2(numeClub1, preturi, 2, jucatori1, 3, terenuri2, 2, campionate1, 2, produse1);
 		GolfClub g3(g2);
 		g3 = g2;
 		cout << g1;
