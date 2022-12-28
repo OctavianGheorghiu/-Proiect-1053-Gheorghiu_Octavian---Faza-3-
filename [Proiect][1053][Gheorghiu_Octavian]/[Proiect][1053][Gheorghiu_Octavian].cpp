@@ -723,6 +723,39 @@ public:
 		return in;
 	}
 
+	void writeToFile(fstream& f) {
+		int lg = strlen(this->numeJucator) + 1;
+		f.write((char*)&lg, sizeof(int));
+		f.write(this->numeJucator, lg);
+		f.write((char*)&this->varsta, sizeof(int));
+		for(int i=0;i<5;i++)
+			f.write((char*)&this->mediePunctaj[i], sizeof(int));
+		f.write((char*)&this->numarCampionateJucate, sizeof(int));
+		for(int i=0;i<this->numarCampionateJucate;i++)
+			f.write((char*)&this->locuri[i], sizeof(int));
+	}
+
+	void readFromFile(fstream& f) {
+		int lg = 0;
+		f.read((char*)&lg, sizeof(int));
+		char* buf = new char[lg];
+		f.read(buf, lg);
+		if (this->numeJucator != nullptr)
+			delete[] this->numeJucator;
+		this->numeJucator = new char[lg];
+		strcpy(this->numeJucator, buf);
+		delete[] buf;
+		f.read((char*)&this->varsta, sizeof(int));
+		for(int i=0;i<5;i++)
+			f.read((char*)&this->mediePunctaj[i], sizeof(int));
+		f.read((char*)&this->numarCampionateJucate, sizeof(int));
+		if (this->locuri != nullptr)
+			delete[] this->locuri;
+		this->locuri = new int[this->numarCampionateJucate];
+		for (int i = 0; i < this->numarCampionateJucate; i++)
+			f.read((char*)&this->locuri[i], sizeof(int));
+	}
+
 	~Jucator() {
 		if (this->numeJucator != nullptr)
 			delete[]this->numeJucator;
@@ -1544,25 +1577,27 @@ int main()
 	}
 	case 6: {
 		
-		Teren t1;
-		char numeTeren1[20];
-		strcpy(numeTeren1, "Valea regilor");
-		int numarObstacole1[3] = { 1,0,3 };
-		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
-		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
-		Teren t3(t2);
-		t3++;
-		t3 += "Vlad";
-		Teren t4;
+		Jucator j1;
+		char numeJucator1[30];
+		strcpy(numeJucator1, "John Alexander");
+		int mediePunctaj1[5] = { 3,5,2,0,0 };
+		int locuri[4] = { 14,16,9,11 };
+		Jucator j2(numeJucator1, 21, mediePunctaj1, 4, locuri);
+		Jucator j3(j2);
+		j1 = j2;
+		Jucator j4;
+		j4++;
+		j4 += 4;
 
 		fstream fout("fisier.txt", ios::out | ios::binary);
-		t2.writeToFile(fout);
+		j2.writeToFile(fout);
 		fout.close();
-		cout << t4;
+		cout << j4;
 		fstream fin("fisier.txt", ios::in | ios::binary);
-		t4.readFromFile(fin);
-		cout << t4;
-		cout << t2;
+		j4.readFromFile(fin);
+		cout << j4;
+		cout << j2;
+
 		break;
 	}
 	default: {
