@@ -771,7 +771,7 @@ private:
 	int numarTerenuri = 0;
 	Teren* terenuri = nullptr;
 	int numarJucatori = 0;
-	Jucator* participanti = nullptr;
+	Jucator* jucatori = nullptr;
 	int premii[3] = { 10000,5000,3000 };
 	static int taxaInscriere;
 
@@ -792,7 +792,7 @@ public:
 		}
 	}
 
-	Campionat(char* numeCampionat, int numarTerenuri, Teren* terenuri, int numarJucatori, Jucator* participanti, int* premii) {
+	Campionat(char* numeCampionat, int numarTerenuri, Teren* terenuri, int numarJucatori, Jucator* jucatori, int* premii) {
 		if (strlen(numeCampionat) > 1) {
 			this->numeCampionat = new char[strlen(numeCampionat) + 1];
 			strcpy(this->numeCampionat, numeCampionat);
@@ -807,11 +807,11 @@ public:
 			for (int i = 0; i < this->numarTerenuri; i++)
 				this->terenuri[i] = terenuri[i];
 		}
-		if (numarJucatori > 0 && participanti != nullptr) {
+		if (numarJucatori > 0 && jucatori != nullptr) {
 			this->numarJucatori = numarJucatori;
-			this->participanti = new Jucator[this->numarJucatori];
+			this->jucatori = new Jucator[this->numarJucatori];
 			for (int i = 0; i < this->numarTerenuri; i++)
-				this->participanti[i] = participanti[i];
+				this->jucatori[i] = jucatori[i];
 		}
 		if (premii != nullptr) {
 			this->premii[0] = premii[0];
@@ -829,11 +829,11 @@ public:
 			for (int i = 0; i < this->numarTerenuri; i++)
 				this->terenuri[i] = c.terenuri[i];
 		}
-		if (c.numarJucatori > 0 && c.participanti != nullptr) {
+		if (c.numarJucatori > 0 && c.jucatori != nullptr) {
 			this->numarJucatori = c.numarJucatori;
-			this->participanti = new Jucator[this->numarJucatori];
+			this->jucatori = new Jucator[this->numarJucatori];
 			for (int i = 0; i < this->numarTerenuri; i++)
-				this->participanti[i] = c.participanti[i];
+				this->jucatori[i] = c.jucatori[i];
 		}
 		if (premii != nullptr) {
 			this->premii[0] = c.premii[0];
@@ -854,13 +854,13 @@ public:
 				for (int i = 0; i < this->numarTerenuri; i++)
 					this->terenuri[i] = c.terenuri[i];
 			}
-			if (c.numarJucatori > 0 && c.participanti != nullptr) {
+			if (c.numarJucatori > 0 && c.jucatori != nullptr) {
 				this->numarJucatori = c.numarJucatori;
-				if (this->participanti != nullptr)
-					delete[]this->participanti;
-				this->participanti = new Jucator[this->numarJucatori];
+				if (this->jucatori != nullptr)
+					delete[]this->jucatori;
+				this->jucatori = new Jucator[this->numarJucatori];
 				for (int i = 0; i < this->numarTerenuri; i++)
-					this->participanti[i] = c.participanti[i];
+					this->jucatori[i] = c.jucatori[i];
 			}
 			if (premii != nullptr) {
 				this->premii[0] = c.premii[0];
@@ -874,12 +874,12 @@ public:
 	void addParticipant(const Jucator j) {
 		Campionat copie = *this;
 		this->numarJucatori++;
-		if (this->participanti != nullptr)
-			delete[]this->participanti;
-		this->participanti = new Jucator[this->numarJucatori];
+		if (this->jucatori != nullptr)
+			delete[]this->jucatori;
+		this->jucatori = new Jucator[this->numarJucatori];
 		for (int i = 0; i < this->numarJucatori - 1; i++)
-			this->participanti[i] = copie.participanti[i];
-		this->participanti[this->numarJucatori - 1] = j;
+			this->jucatori[i] = copie.jucatori[i];
+		this->jucatori[this->numarJucatori - 1] = j;
 	}
 
 	int getPremiiTotale() {
@@ -900,7 +900,7 @@ public:
 	}
 
 	explicit operator Jucator() {
-		return this->participanti[0];
+		return this->jucatori[0];
 	}
 
 	bool operator>(Campionat c) {
@@ -946,10 +946,10 @@ public:
 		if (c.numarTerenuri > 0 && c.terenuri != nullptr)
 			for (int i = 0; i < c.numarTerenuri; i++)
 				out << "\n------- Teren " << i + 1 << " -------" << c.terenuri[i];
-		out << "\nNumar participanti: " << c.numarJucatori;
-		if (c.numarJucatori > 0 && c.participanti != nullptr)
+		out << "\nNumar jucatori: " << c.numarJucatori;
+		if (c.numarJucatori > 0 && c.jucatori != nullptr)
 			for (int i = 0; i < c.numarJucatori; i++)
-				out << "\n------- Jucator " << i + 1 << " -------" << c.participanti[i];
+				out << "\n------- Jucator " << i + 1 << " -------" << c.jucatori[i];
 		out << endl << "\nPremii pentru top 3: " << c.premii[0] << ", " << c.premii[1] << ", " << c.premii[2];
 		return out;
 	}
@@ -976,12 +976,12 @@ public:
 		cout << "\nNumar jucatori: ";
 		in >> c.numarJucatori;
 		if (c.numarJucatori > 0) {
-			if (c.participanti != nullptr)
-				delete[]c.participanti;
-			c.participanti = new Jucator[c.numarJucatori];
+			if (c.jucatori != nullptr)
+				delete[]c.jucatori;
+			c.jucatori = new Jucator[c.numarJucatori];
 			for (int i = 0; i < c.numarJucatori; i++) {
 				cout << "\n\n--JUCATORUL " << i + 1 << "--";
-				in >> c.participanti[i];
+				in >> c.jucatori[i];
 			}
 		}
 		cout << "\nPremiul locul 1: ";
@@ -1002,7 +1002,7 @@ public:
 			this->terenuri[i].writeToFile(f);
 		f.write((char*)&this->numarJucatori, sizeof(int));
 		for (int i = 0; i < this->numarJucatori; i++)
-			this->participanti[i].writeToFile(f);
+			this->jucatori[i].writeToFile(f);
 		for (int i = 0; i < 3; i++)
 			f.write((char*)&this->premii[i], sizeof(int));
 		f.write((char*)&this->taxaInscriere, sizeof(int));
@@ -1025,11 +1025,11 @@ public:
 		for (int i = 0; i < this->numarTerenuri; i++)
 			this->terenuri[i].readFromFile(f);
 		f.read((char*)&this->numarJucatori, sizeof(int));
-		if (this->participanti != nullptr)
-			delete[] this->participanti;
-		this->participanti = new Jucator[this->numarJucatori];
+		if (this->jucatori != nullptr)
+			delete[] this->jucatori;
+		this->jucatori = new Jucator[this->numarJucatori];
 		for (int i = 0; i < this->numarJucatori; i++)
-			this->participanti[i].readFromFile(f);
+			this->jucatori[i].readFromFile(f);
 		for (int i = 0; i < 3; i++)
 			f.read((char*)&this->premii[i], sizeof(int));
 		f.read((char*)&this->taxaInscriere, sizeof(int));
@@ -1038,8 +1038,8 @@ public:
 	~Campionat() {
 		if (this->terenuri != nullptr)
 			delete[]this->terenuri;
-		if (this->participanti != nullptr)
-			delete[]this->participanti;
+		if (this->jucatori != nullptr)
+			delete[]this->jucatori;
 	}
 };
 int Campionat::taxaInscriere = 100;
@@ -1486,11 +1486,11 @@ int main()
 		Campionat c1(numeCampionat1);
 
 		Teren terenuri1[2] = { t1,t2 };
-		Jucator participanti1[2] = { j1,j2 };
+		Jucator jucatori1[2] = { j1,j2 };
 		int premii[3] = { 20000,10000,5000 };
 		char numeCampionat2[20];
 		strcpy(numeCampionat2, "Cupa mare");
-		Campionat c2(numeCampionat2, 2, terenuri1, 2, participanti1, premii);
+		Campionat c2(numeCampionat2, 2, terenuri1, 2, jucatori1, premii);
 
 		cout << c1;
 		cout << c2;
@@ -1576,11 +1576,11 @@ int main()
 		strcpy(numeCampionat1, "Cupa amatorilor");
 		Campionat c1(numeCampionat1);
 		Teren terenuri1[2] = { t1,t2 };
-		Jucator participanti1[2] = { j1,j2 };
+		Jucator jucatori1[2] = { j1,j2 };
 		int premii[3] = { 20000,10000,5000 };
 		char numeCampionat2[20];
 		strcpy(numeCampionat2, "Cupa mare");
-		Campionat c2(numeCampionat2, 2, terenuri1, 2, participanti1, premii);
+		Campionat c2(numeCampionat2, 2, terenuri1, 2, jucatori1, premii);
 		Campionat c3(c2);
 		c3 += 200;
 		char numeCampionat3[20];
@@ -1594,11 +1594,11 @@ int main()
 		char numeClub1[20];
 		strcpy(numeClub1, "Golfers");
 		Teren terenuri2[3] = { t1,t2,t3 };
-		Jucator jucatori1[2] = { j2,j4 };
+		Jucator jucatori2[2] = { j2,j4 };
 		Campionat campionate1[2] = { c2,c3 };
 		ProdusGolf produse1[2] = { p1,p2 };
 		int preturi[2] = { 60,550 };
-		GolfClub g2(numeClub1, preturi, 2, jucatori1, 3, terenuri2, 2, campionate1, 2, produse1);
+		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
 		GolfClub g3(g2);
 		g3 = g2;
 		cout << g1;
@@ -1675,11 +1675,11 @@ int main()
 		strcpy(numeCampionat1, "Cupa amatorilor");
 		Campionat c1(numeCampionat1);
 		Teren terenuri1[2] = { t1,t2 };
-		Jucator participanti1[2] = { j1,j2 };
+		Jucator jucatori1[2] = { j1,j2 };
 		int premii[3] = { 20000,10000,5000 };
 		char numeCampionat2[20];
 		strcpy(numeCampionat2, "Cupa mare");
-		Campionat c2(numeCampionat2, 2, terenuri1, 2, participanti1, premii);
+		Campionat c2(numeCampionat2, 2, terenuri1, 2, jucatori1, premii);
 		Campionat c3(c2);
 		c3 += 200;
 		char numeCampionat3[20];
