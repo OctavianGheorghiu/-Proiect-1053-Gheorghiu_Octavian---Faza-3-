@@ -507,7 +507,6 @@ public:
 };
 int Teren::idTerenCurent = 1;
 
-
 class Jucator {
 private:
 	static int idJucatorCurent;
@@ -1296,6 +1295,64 @@ public:
 		return in;
 	}
 
+	void writeToFile(fstream& f) {
+		int lg = strlen(this->numeClub) + 1;
+		f.write((char*)&lg, sizeof(int));
+		f.write(this->numeClub, lg);
+		f.write((char*)&this->preturi[0], sizeof(int));
+		f.write((char*)&this->preturi[1], sizeof(int));
+		f.write((char*)&this->numarJucatori, sizeof(int));
+		for (int i = 0; i < this->numarJucatori; i++)
+			this->jucatori[i].writeToFile(f);
+		f.write((char*)&this->numarTerenuri, sizeof(int));
+		for (int i = 0; i < this->numarTerenuri; i++)
+			this->terenuri[i].writeToFile(f);
+		f.write((char*)&this->numarCampionate, sizeof(int));
+		for (int i = 0; i < this->numarCampionate; i++)
+			this->campionate[i].writeToFile(f);
+		f.write((char*)&this->numarProduse, sizeof(int));
+		for (int i = 0; i < this->numarProduse; i++)
+			this->produse[i].writeToFile(f);
+	}
+
+	void readFromFile(fstream& f) {
+		int lg = 0;
+		f.read((char*)&lg, sizeof(int));
+		char* buf = new char[lg];
+		f.read(buf, lg);
+		if (this->numeClub != nullptr)
+			delete[] this->numeClub;
+		this->numeClub = new char[lg];
+		strcpy(this->numeClub, buf);
+		delete[] buf;
+		f.read((char*)&this->preturi[0], sizeof(int));
+		f.read((char*)&this->preturi[1], sizeof(int));
+		f.read((char*)&this->numarJucatori, sizeof(int));
+		if (this->jucatori != nullptr)
+			delete[] this->jucatori;
+		this->jucatori = new Jucator[this->numarJucatori];
+		for (int i = 0; i < this->numarJucatori; i++)
+			this->jucatori[i].readFromFile(f);
+		f.read((char*)&this->numarTerenuri, sizeof(int));
+		if (this->terenuri != nullptr)
+			delete[] this->terenuri;
+		this->terenuri = new Teren[this->numarTerenuri];
+		for (int i = 0; i < this->numarTerenuri; i++)
+			this->terenuri[i].readFromFile(f);
+		f.read((char*)&this->numarCampionate, sizeof(int));
+		if (this->campionate != nullptr)
+			delete[] this->campionate;
+		this->campionate = new Campionat[this->numarCampionate];
+		for (int i = 0; i < this->numarCampionate; i++)
+			this->campionate[i].readFromFile(f);
+		f.read((char*)&this->numarProduse, sizeof(int));
+		if (this->produse != nullptr)
+			delete[] this->produse;
+		this->produse = new ProdusGolf[this->numarProduse];
+		for (int i = 0; i < this->numarProduse; i++)
+			this->produse[i].readFromFile(f);
+	}
+
 	~GolfClub() {
 		if (this->numeClub != nullptr)
 			delete[]this->numeClub;
@@ -1687,13 +1744,26 @@ int main()
 		Campionat c4(numeCampionat3);
 		c1.addParticipant(j3);
 
+		//GolfClub
+
+		GolfClub g1;
+		char numeClub1[20];
+		strcpy(numeClub1, "Golfers");
+		Teren terenuri2[3] = { t1,t2,t3 };
+		Jucator jucatori2[2] = { j2,j4 };
+		Campionat campionate1[2] = { c2,c3 };
+		ProdusGolf produse1[2] = { p1,p2 };
+		int preturi[2] = { 60,550 };
+		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
+		GolfClub g3(g2);
+
 		fstream fout("fisier.txt", ios::out | ios::binary);
-		c2.writeToFile(fout);
+		g2.writeToFile(fout);
 		fout.close();
-		cout << c1;
+		cout << g1;
 		fstream fin("fisier.txt", ios::in | ios::binary);
-		c1.readFromFile(fin);
-		cout << c1;
+		g1.readFromFile(fin);
+		cout << g1;
 
 		break;
 	}
