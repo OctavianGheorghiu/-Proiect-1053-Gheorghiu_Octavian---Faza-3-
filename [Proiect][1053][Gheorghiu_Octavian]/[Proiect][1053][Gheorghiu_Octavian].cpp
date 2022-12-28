@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable: 4996)
 using namespace std;
@@ -221,6 +222,45 @@ public:
 
 		return in;
 	}
+
+	void writeToFile(fstream& f) {
+		int lg = strlen(this->numeProdus)+1;
+		f.write((char*)&lg, sizeof(int));
+		f.write(this->numeProdus, lg);
+		for (int i = 0; i < 3; i++)
+			f.write((char*)&this->vanzari[i], sizeof(float));
+		f.write((char*)&this->numarDimensiuni, sizeof(int));
+		for(int i=0;i<this->numarDimensiuni;i++)
+			f.write((char*)&this->dimensiune[i], sizeof(float));
+		for (int i = 0; i < this->numarDimensiuni; i++)
+			f.write((char*)&this->pret[i], sizeof(float));
+	}
+
+	void readFromFile(fstream& f) {
+		int lg = 0;
+		f.read((char*)&lg, sizeof(int));
+		char* buf = new char[lg];
+		f.read(buf, lg);
+		if (this->numeProdus != nullptr);
+			delete[] this->numeProdus;
+		this->numeProdus = new char[lg];
+		strcpy(this->numeProdus, buf);
+		delete[] buf;
+		for (int i = 0; i < 3; i++)
+			f.read((char*)&this->vanzari[i], sizeof(float));
+		if (this->dimensiune != nullptr);
+			delete[] this->dimensiune;
+		if (this->pret != nullptr);
+			delete[] this->pret;
+		f.read((char*)&this->numarDimensiuni, sizeof(float));
+		this->dimensiune = new float[this->numarDimensiuni];
+		this->pret = new float[this->numarDimensiuni];
+		for (int i = 0; i < this->numarDimensiuni; i++)
+			f.read((char*)&this->dimensiune[i], sizeof(float));
+		for (int i = 0; i < this->numarDimensiuni; i++)
+			f.read((char*)&this->pret[i], sizeof(float));
+	}
+
 
 	~ProdusGolf() {
 		if (this->numeProdus != nullptr)
@@ -1460,6 +1500,40 @@ int main()
 		cout << "\n\nprimul teren din clubul de golf este: " << (Teren)g2;
 		//cin >> g1;
 		//cout << g1;
+		break;
+	}
+	case 6: {
+		char numeProdus1[20];
+		strcpy(numeProdus1, "masinuta de golf");
+		ProdusGolf p1(numeProdus1);
+		char numeProdus2[20];
+		strcpy(numeProdus2, "minge de golf");
+		float vanzari[3] = { 230,400,150 };
+		float dimensiuni[3] = { 1,2,3 };
+		float pret[3] = { 5.5,10,14.5 };
+		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
+		ProdusGolf p3(p2);
+		char numeProdus3[20];
+		strcpy(numeProdus3, "crosa de golf");
+		float vanzari2[3] = { 500,450,700 };
+		float dimensiuni2[4] = { 4,6,8,12 };
+		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
+		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
+		ProdusGolf p5;
+		char numeNou[20] = "Masina de golf";
+		p1.setNumeProdus(numeNou);
+		
+		
+		fstream fout("fisier.txt", ios::out | ios::binary);
+		p2.writeToFile(fout);
+		fout.close();
+		cout << p1;
+		fstream fin("fisier.txt", ios::in | ios::binary);
+		p1.readFromFile(fin);
+		cout << p1;
+		cout << p2;
+
+
 		break;
 	}
 	default: {
