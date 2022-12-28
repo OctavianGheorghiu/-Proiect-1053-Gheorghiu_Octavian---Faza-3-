@@ -993,6 +993,48 @@ public:
 		return in;
 	}
 
+	void writeToFile(fstream& f) {
+		int lg = strlen(this->numeCampionat) + 1;
+		f.write((char*)&lg, sizeof(int));
+		f.write(this->numeCampionat, lg);
+		f.write((char*)&this->numarTerenuri, sizeof(int));
+		for (int i = 0; i < this->numarTerenuri; i++)
+			this->terenuri[i].writeToFile(f);
+		f.write((char*)&this->numarJucatori, sizeof(int));
+		for (int i = 0; i < this->numarJucatori; i++)
+			this->participanti[i].writeToFile(f);
+		for (int i = 0; i < 3; i++)
+			f.write((char*)&this->premii[i], sizeof(int));
+		f.write((char*)&this->taxaInscriere, sizeof(int));
+	}
+
+	void readFromFile(fstream& f) {
+		int lg = 0;
+		f.read((char*)&lg, sizeof(int));
+		char* buf = new char[lg];
+		f.read(buf, lg);
+		if (this->numeCampionat != nullptr)
+			delete[] this->numeCampionat;
+		this->numeCampionat = new char[lg];
+		strcpy(this->numeCampionat, buf);
+		delete[] buf;
+		f.read((char*)&this->numarTerenuri, sizeof(int));
+		if (this->terenuri != nullptr)
+			delete[] this->terenuri;
+		this->terenuri = new Teren[this->numarTerenuri];
+		for (int i = 0; i < this->numarTerenuri; i++)
+			this->terenuri[i].readFromFile(f);
+		f.read((char*)&this->numarJucatori, sizeof(int));
+		if (this->participanti != nullptr)
+			delete[] this->participanti;
+		this->participanti = new Jucator[this->numarJucatori];
+		for (int i = 0; i < this->numarJucatori; i++)
+			this->participanti[i].readFromFile(f);
+		for (int i = 0; i < 3; i++)
+			f.read((char*)&this->premii[i], sizeof(int));
+		f.read((char*)&this->taxaInscriere, sizeof(int));
+	}
+
 	~Campionat() {
 		if (this->terenuri != nullptr)
 			delete[]this->terenuri;
@@ -1577,6 +1619,43 @@ int main()
 	}
 	case 6: {
 		
+		//Teren
+
+		Teren t1;
+		char numeTeren1[20];
+		strcpy(numeTeren1, "Valea regilor");
+		int numarObstacole1[3] = { 1,0,3 };
+		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
+		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
+		Teren t3(t2);
+		t3++;
+		t3 += "Vlad";
+		Teren t4;
+
+		//ProdusGolf
+
+		char numeProdus1[20];
+		strcpy(numeProdus1, "masinuta de golf");
+		ProdusGolf p1(numeProdus1);
+		char numeProdus2[20];
+		strcpy(numeProdus2, "minge de golf");
+		float vanzari[3] = { 230,400,150 };
+		float dimensiuni[3] = { 1,2,3 };
+		float pret[3] = { 5.5,10,14.5 };
+		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
+		ProdusGolf p3(p2);
+		char numeProdus3[20];
+		strcpy(numeProdus3, "crosa de golf");
+		float vanzari2[3] = { 500,450,700 };
+		float dimensiuni2[4] = { 4,6,8,12 };
+		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
+		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
+		ProdusGolf p5;
+		char numeNou[20] = "Masina de golf";
+		p1.setNumeProdus(numeNou);
+
+		//Jucaor
+
 		Jucator j1;
 		char numeJucator1[30];
 		strcpy(numeJucator1, "John Alexander");
@@ -1589,14 +1668,32 @@ int main()
 		j4++;
 		j4 += 4;
 
+
+		//Campionat
+
+		char numeCampionat1[20];
+		strcpy(numeCampionat1, "Cupa amatorilor");
+		Campionat c1(numeCampionat1);
+		Teren terenuri1[2] = { t1,t2 };
+		Jucator participanti1[2] = { j1,j2 };
+		int premii[3] = { 20000,10000,5000 };
+		char numeCampionat2[20];
+		strcpy(numeCampionat2, "Cupa mare");
+		Campionat c2(numeCampionat2, 2, terenuri1, 2, participanti1, premii);
+		Campionat c3(c2);
+		c3 += 200;
+		char numeCampionat3[20];
+		strcpy(numeCampionat3, "Cupa Intermediara");
+		Campionat c4(numeCampionat3);
+		c1.addParticipant(j3);
+
 		fstream fout("fisier.txt", ios::out | ios::binary);
-		j2.writeToFile(fout);
+		c2.writeToFile(fout);
 		fout.close();
-		cout << j4;
+		cout << c1;
 		fstream fin("fisier.txt", ios::in | ios::binary);
-		j4.readFromFile(fin);
-		cout << j4;
-		cout << j2;
+		c1.readFromFile(fin);
+		cout << c1;
 
 		break;
 	}
