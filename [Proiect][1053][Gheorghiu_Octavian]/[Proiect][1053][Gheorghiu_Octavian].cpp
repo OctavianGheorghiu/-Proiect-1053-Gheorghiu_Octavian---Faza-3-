@@ -241,16 +241,16 @@ public:
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
 		f.read(buf, lg);
-		if (this->numeProdus != nullptr);
+		if (this->numeProdus != nullptr)
 			delete[] this->numeProdus;
 		this->numeProdus = new char[lg];
 		strcpy(this->numeProdus, buf);
 		delete[] buf;
 		for (int i = 0; i < 3; i++)
 			f.read((char*)&this->vanzari[i], sizeof(float));
-		if (this->dimensiune != nullptr);
+		if (this->dimensiune != nullptr)
 			delete[] this->dimensiune;
-		if (this->pret != nullptr);
+		if (this->pret != nullptr)
 			delete[] this->pret;
 		f.read((char*)&this->numarDimensiuni, sizeof(float));
 		this->dimensiune = new float[this->numarDimensiuni];
@@ -260,7 +260,6 @@ public:
 		for (int i = 0; i < this->numarDimensiuni; i++)
 			f.read((char*)&this->pret[i], sizeof(float));
 	}
-
 
 	~ProdusGolf() {
 		if (this->numeProdus != nullptr)
@@ -417,6 +416,7 @@ public:
 	friend ostream& operator<<(ostream& out, const Teren& t) {
 		out << "\n\n****";
 		out << "\nid teren: " << t.idTeren;
+		out << "\nNume teren: " << t.numeTeren;
 		out << "\nPar: " << t.par;
 		out << "\nNumar obstacole: ";
 		out << "\n -Apa: " << t.numarObstacole[0];
@@ -456,6 +456,46 @@ public:
 			}
 		}
 		return in;
+	}
+
+	void writeToFile(fstream& f) {
+		int lg = strlen(this->numeTeren) + 1;
+		f.write((char*)&lg, sizeof(int));
+		f.write(this->numeTeren,lg);
+		for (int i = 0; i < 3; i++)
+			f.write((char*)&this->numarObstacole, sizeof(int));
+		f.write((char*)&this->par, sizeof(int));
+		f.write((char*)&this->numarHoleInOne, sizeof(int));
+		for (int i = 0; i < this->numarHoleInOne; i++) {
+			int lg = this->numeSportivi[i].length() + 1;
+			f.write((char*)&lg, sizeof(int));
+			f.write(this->numeSportivi[i].data(), lg);
+		}
+	}
+
+	void readFromFile(fstream& f) {
+		int lg = 0;
+		f.read((char*)&lg, sizeof(int));
+		char* buf = new char[lg];
+		f.read(buf, lg);
+		if (this->numeTeren != nullptr)
+			delete[] this->numeTeren;
+		this->numeTeren = new char[lg];
+		strcpy(this->numeTeren, buf);
+		delete[] buf;
+		for (int i = 0; i < 3; i++)
+			f.read((char*)&this->numarObstacole[i], sizeof(int));
+		f.read((char*)&this->par, sizeof(int));
+		f.read((char*)&this->numarHoleInOne, sizeof(int));
+		this->numeSportivi = new string[this->numarHoleInOne];
+		for (int i = 0; i < this->numarHoleInOne; i++) {
+			f.read((char*)&lg, sizeof(int));
+			char* buf = new char[lg];
+			f.read(buf, lg);
+			this->numeSportivi[i] = buf;
+			delete[] buf;
+		}
+
 	}
 
 	~Teren() {
@@ -1503,37 +1543,26 @@ int main()
 		break;
 	}
 	case 6: {
-		char numeProdus1[20];
-		strcpy(numeProdus1, "masinuta de golf");
-		ProdusGolf p1(numeProdus1);
-		char numeProdus2[20];
-		strcpy(numeProdus2, "minge de golf");
-		float vanzari[3] = { 230,400,150 };
-		float dimensiuni[3] = { 1,2,3 };
-		float pret[3] = { 5.5,10,14.5 };
-		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
-		ProdusGolf p3(p2);
-		char numeProdus3[20];
-		strcpy(numeProdus3, "crosa de golf");
-		float vanzari2[3] = { 500,450,700 };
-		float dimensiuni2[4] = { 4,6,8,12 };
-		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
-		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
-		ProdusGolf p5;
-		char numeNou[20] = "Masina de golf";
-		p1.setNumeProdus(numeNou);
 		
-		
+		Teren t1;
+		char numeTeren1[20];
+		strcpy(numeTeren1, "Valea regilor");
+		int numarObstacole1[3] = { 1,0,3 };
+		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
+		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
+		Teren t3(t2);
+		t3++;
+		t3 += "Vlad";
+		Teren t4;
+
 		fstream fout("fisier.txt", ios::out | ios::binary);
-		p2.writeToFile(fout);
+		t2.writeToFile(fout);
 		fout.close();
-		cout << p1;
+		cout << t4;
 		fstream fin("fisier.txt", ios::in | ios::binary);
-		p1.readFromFile(fin);
-		cout << p1;
-		cout << p2;
-
-
+		t4.readFromFile(fin);
+		cout << t4;
+		cout << t2;
 		break;
 	}
 	default: {
