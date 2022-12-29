@@ -1412,14 +1412,30 @@ public:
 	Gestiune(char** fisiere) {
 		cout << "\nConstructor\n";
 		finProduse.open(fisiere[1], ios::in);
-		finProduse >> this->_numarProduse;
-		this->_produse = new ProdusGolf[this->_numarProduse];
+		if (finProduse.is_open()) {
+			finProduse >> this->_numarProduse;
+			this->_produse = new ProdusGolf[this->_numarProduse];
 			ProdusGolf produsAux;
-		for (int i = 0; i < this->_numarProduse; i++) {
-			produsAux.readFromTxtFile(finProduse);
-			_produse[i] = produsAux;
-			cout << "\npas 1";
-			cout << _produse[i];
+			for (int i = 0; i < this->_numarProduse; i++) {
+				produsAux.readFromTxtFile(finProduse);
+				_produse[i] = produsAux;
+				cout << _produse[i];
+			}
+		}
+		else {
+			//finProduse.close();
+			finProduse.open("ProduseBin.txt", ios::in|ios::binary);
+			finProduse.read((char*)&this->_numarProduse, sizeof(int));
+			cout << this->_numarProduse;
+			this->_produse = new ProdusGolf[this->_numarProduse];
+			ProdusGolf produsAux;
+			for (int i = 0; i < this->_numarProduse; i++) {
+				cout << "\ntest 1\n";
+				produsAux.readFromBinFile(finProduse);
+				_produse[i] = produsAux;
+				cout << _produse[i];
+			}
+			finProduse.close();
 		}
 	}
 	~Gestiune() {
@@ -1742,7 +1758,7 @@ int main(int numar_fisiere, char* fisiere[7])
 		break;
 	}
 	case 6: {
-		
+
 		//Teren
 
 		Teren t1;
@@ -1824,13 +1840,31 @@ int main(int numar_fisiere, char* fisiere[7])
 		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
 		GolfClub g3(g2);
 
-		//fstream fout("fisier.txt", ios::out | ios::binary);
-		//g2.writeToBinFile(fout);
+		//fstream fout("ProduseBin.txt", ios::out | ios::binary);
+		//int i = 5;
+		//fout.write((char*)&i, sizeof(int));
+		//cout << i;
+		//p1.writeToBinFile(fout);
+		//p2.writeToBinFile(fout);
+		//p3.writeToBinFile(fout);
+		//p4.writeToBinFile(fout);
+		//p5.writeToBinFile(fout);
 		//fout.close();
-		//cout << g1;
-		//fstream fin("fisier.txt", ios::in | ios::binary);
-		//g1.readFromBinFile(fin);
-		//cout << g1;
+		////cout << g1;
+		//fstream fin("ProduseBin.txt", ios::in | ios::binary);
+		//i=0;
+		//fin.read((char*)&i, sizeof(int));
+		//cout << i;
+		//p5.readFromBinFile(fin);
+		//cout << p5;
+		//p5.readFromBinFile(fin);
+		//cout << p5;
+		//p5.readFromBinFile(fin);
+		//cout << p5;
+		//p5.readFromBinFile(fin);
+		//cout << p5;
+		//p5.readFromBinFile(fin);
+		//cout << p5;
 		Gestiune gst(fisiere);
 		cout << fisiere[1];
 		cout << endl << sizeof(gst);
