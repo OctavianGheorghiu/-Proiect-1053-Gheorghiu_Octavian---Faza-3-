@@ -261,6 +261,24 @@ public:
 			f.read((char*)&this->pret[i], sizeof(float));
 	}
 
+	void readFromTxtFile(fstream& f) {
+		char aux[100];
+		f >> aux;
+		if (this->numeProdus != nullptr)
+			delete[]this->numeProdus;
+		this->numeProdus = new char[strlen(aux) + 1];
+		strcpy(this->numeProdus, aux);
+		for (int i = 0; i < 3; i++) 
+			f >> this->vanzari[i];
+		f >> this->numarDimensiuni;
+		this->dimensiune = new float[this->numarDimensiuni];
+		for (int i = 0; i < this->numarDimensiuni; i++)
+			f >> this->dimensiune[i];
+		this->pret = new float[this->numarDimensiuni];
+		for (int i = 0; i < this->numarDimensiuni; i++)
+			f >> this->pret[i];
+ }
+
 	~ProdusGolf() {
 		if (this->numeProdus != nullptr)
 			delete[] this->numeProdus;
@@ -1369,7 +1387,56 @@ public:
 int GolfClub::idGolfClubCurent = 1;
 
 
-int main()
+class Gestiune {
+public:
+	//Gestiune(char** fisiere):finProduse("Produse.txt"){
+	//	finProduse(fisiere[1]);
+	//}
+private:
+	int _numarProduse = 0;
+	ProdusGolf* _produse = nullptr;
+	int _numarTerenuri = 0;
+	Teren* _terenuri = nullptr;
+	int _numarJucatori = 0;
+	Jucator* _jucatori = nullptr;
+	int _numarCampionate = 0;
+	Campionat* _campionate = nullptr;
+	int _numarCluburi = 0;
+	GolfClub* _cluburi= nullptr;
+	fstream finProduse;// ("Produse.txt", ios::in | ios::app);
+	fstream finTerenuri;// ("Terenuri.txt", ios::in);
+	fstream finJucatori;// ("Jucatori.txt", ios::in);
+	fstream finCampionate;// ("Campionate.txt", ios::in);
+	fstream finCluburi;// ("Cluburi.txt", ios::in);
+public:
+	Gestiune(char** fisiere) {
+		cout << "\nConstructor\n";
+		finProduse.open(fisiere[1], ios::in);
+		finProduse >> this->_numarProduse;
+		this->_produse = new ProdusGolf[this->_numarProduse];
+			ProdusGolf produsAux;
+		for (int i = 0; i < this->_numarProduse; i++) {
+			produsAux.readFromTxtFile(finProduse);
+			_produse[i] = produsAux;
+			cout << "\npas 1";
+			cout << _produse[i];
+		}
+	}
+	~Gestiune() {
+		if (this->_produse != nullptr)
+			delete[]this->_produse;
+		if (this->_terenuri != nullptr)
+			delete[]this->_terenuri;
+		if (this->_jucatori != nullptr)
+			delete[]this->_jucatori;
+		if (this->_campionate != nullptr)
+			delete[]this->_campionate;
+		if (this->_cluburi != nullptr)
+			delete[]this->_cluburi;
+	}
+};
+
+int main(int numar_fisiere, char* fisiere[7])
 {
 	int optiune = 0;
 	cout << "Alegeti clasa:\n1.ProdusGolf.\n2.Teren.\n3.Jucator.\n4.Campionat.\n5.GolfClub.\n\nClasa nr.: ";
@@ -1757,14 +1824,16 @@ int main()
 		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
 		GolfClub g3(g2);
 
-		fstream fout("fisier.txt", ios::out | ios::binary);
-		g2.writeToBinFile(fout);
-		fout.close();
-		cout << g1;
-		fstream fin("fisier.txt", ios::in | ios::binary);
-		g1.readFromBinFile(fin);
-		cout << g1;
-
+		//fstream fout("fisier.txt", ios::out | ios::binary);
+		//g2.writeToBinFile(fout);
+		//fout.close();
+		//cout << g1;
+		//fstream fin("fisier.txt", ios::in | ios::binary);
+		//g1.readFromBinFile(fin);
+		//cout << g1;
+		Gestiune gst(fisiere);
+		cout << fisiere[1];
+		cout << endl << sizeof(gst);
 		break;
 	}
 	default: {

@@ -1,0 +1,122 @@
+
+
+->->->->->->->->->->GOLF CLUB<-<-<-<-<-<-<-<-<-<-
+id club: 2
+Nume club: Golfers
+Pret abonament:  1 luna: 60,  12 luni: 550
+Numar jucatori: 2
+1. 
+id jucator: 13
+Nume jucator: John Alexander
+Varsta: 21
+Medie punctaje: 3 5 2 0 0 
+Numar campionate jucate: 4
+1: 14 2: 16 3: 9 4: 11 
+2. 
+id jucator: 14
+Nume jucator: Anonim
+Varsta: 1
+Medie punctaje: 4 3 3 3 3 
+Numar campionate jucate: 0
+
+Numar terenuri: 3
+1. 
+
+****
+id teren: 6
+Nume teren: teren
+Par: 0
+Numar obstacole: 
+ -Apa: 0
+ -Nisip: 0
+ -Acces dificil: 0
+Numar hole-in-one: 0
+
+2. 
+
+****
+id teren: 7
+Nume teren: Valea regilor
+Par: 5
+Numar obstacole: 
+ -Apa: 1
+ -Nisip: 0
+ -Acces dificil: 3
+Numar hole-in-one: 3
+1: Tom Ford   2: Alexander   3: Mathew   
+3. 
+
+****
+id teren: 8
+Nume teren: Valea regilor
+Par: 6
+Numar obstacole: 
+ -Apa: 1
+ -Nisip: 0
+ -Acces dificil: 3
+Numar hole-in-one: 4
+1: Tom Ford   2: Alexander   3: Mathew   4: Vlad   
+Numar campionate: 2
+1. 
+
+<~~~~~~~~~~~~~~~CAMPIONAT~~~~~~~~~~~~~~~>
+
+Nume campionat: Cupa mare
+Numar terenuri: 0
+Numar jucatori: 2
+------- Jucator 1 -------
+id jucator: 15
+Nume jucator: Anonim
+Varsta: 0
+Medie punctaje: 3 3 3 3 3 
+Numar campionate jucate: 0
+
+------- Jucator 2 -------
+id jucator: 16
+Nume jucator: Anonim
+Varsta: 0
+Medie punctaje: 3 3 3 3 3 
+Numar campionate jucate: 0
+
+
+Premii pentru top 3: 20000, 10000, 5000
+2. 
+
+<~~~~~~~~~~~~~~~CAMPIONAT~~~~~~~~~~~~~~~>
+
+Nume campionat: Cupa mare
+Numar terenuri: 0
+Numar jucatori: 2
+------- Jucator 1 -------
+id jucator: 19
+Nume jucator: Anonim
+Varsta: 0
+Medie punctaje: 3 3 3 3 3 
+Numar campionate jucate: 0
+
+------- Jucator 2 -------
+id jucator: 20
+Nume jucator: Anonim
+Varsta: 0
+Medie punctaje: 3 3 3 3 3 
+Numar campionate jucate: 0
+
+
+Premii pentru top 3: 20200, 10000, 5000
+Numar Produse: 2
+1. 
+****
+id: 5
+Nume produs: Masina de golf
+Numar dimensiuni: 0
+ Vanzarile pe ultimele 3 luni (lei): 0, 0, 0
+
+2. 
+****
+id: 6
+Nume produs: minge de golf
+Numar dimensiuni: 3
+1. dimensiunea de: 1 cu pretul de : 5.5 lei.
+2. dimensiunea de: 2 cu pretul de : 10 lei.
+3. dimensiunea de: 3 cu pretul de : 14.5 lei.
+ Vanzarile pe ultimele 3 luni (lei): 230, 400, 150
