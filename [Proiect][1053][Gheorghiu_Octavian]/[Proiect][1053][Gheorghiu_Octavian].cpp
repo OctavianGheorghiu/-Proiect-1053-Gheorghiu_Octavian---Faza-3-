@@ -817,12 +817,12 @@ int Jucator::idJucatorCurent = 1;
 class Campionat {
 private:
 	char* numeCampionat = nullptr;
+	int premii[3] = { 10000,5000,3000 };
+	static int taxaInscriere;
 	int numarTerenuri = 0;
 	Teren* terenuri = nullptr;
 	int numarJucatori = 0;
 	Jucator* jucatori = nullptr;
-	int premii[3] = { 10000,5000,3000 };
-	static int taxaInscriere;
 
 public:
 	Campionat() {
@@ -1082,6 +1082,31 @@ public:
 		for (int i = 0; i < 3; i++)
 			f.read((char*)&this->premii[i], sizeof(int));
 		f.read((char*)&this->taxaInscriere, sizeof(int));
+	}
+
+	void readFromTxtFile(fstream& f) {
+		char aux[100];
+		f >> aux;
+		if (this->numeCampionat != nullptr)
+			delete[]this->numeCampionat;
+		this->numeCampionat = new char[strlen(aux) + 1];
+		strcpy(this->numeCampionat, aux);
+		f >> this->premii[0];
+		f >> this->premii[1];
+		f >> this->premii[2];
+		f >> this->taxaInscriere;
+		f >> this->numarTerenuri;
+		if (this->terenuri != nullptr)
+			delete[]this->terenuri;
+		this->terenuri = new Teren[this->numarTerenuri];
+		for (int i = 0; i < this->numarTerenuri; i++)
+			terenuri[i].readFromTxtFile(f);
+		f >> this->numarJucatori;
+		if (this->jucatori != nullptr)
+			delete[]this->jucatori;
+		this->jucatori = new Jucator[this->numarJucatori];
+		for (int i = 0; i < this->numarJucatori; i++)
+			jucatori[i].readFromTxtFile(f);
 	}
 
 	~Campionat() {
@@ -1451,7 +1476,7 @@ public:
 						for (int i = 0; i < this->_numarProduse; i++) {
 							produsAux.readFromTxtFile(finProduse);
 							_produse[i] = produsAux;
-							cout << _produse[i];
+							//cout << _produse[i];
 						}
 						ok[i-1]++;
 					}
@@ -1467,7 +1492,7 @@ public:
 						for (int i = 0; i < this->_numarTerenuri; i++) {
 							terenAux.readFromTxtFile(finTerenuri);
 							_terenuri[i] = terenAux;
-							cout << _terenuri[i];
+							//cout << _terenuri[i];
 						}
 						ok[i-1]++;
 					}
@@ -1483,13 +1508,27 @@ public:
 						for (int i = 0; i < this->_numarJucatori; i++) {
 							jucatorAux.readFromTxtFile(finJucatori);
 							_jucatori[i] = jucatorAux;
-							cout << _jucatori[i];
+							//cout << _jucatori[i];
 						}
-						ok[i - 1]++;
+						ok[i-1]++;
 					}
 				}
 			else
-				if (strstr(fisiere[i], "Campionat")) {}
+				if (strstr(fisiere[i], "Campionat")) {
+					finCampionate.open(fisiere[i], ios::in);
+					if (finCampionate.is_open()) {
+						cout << "\n--FISIER TXT\n";
+						finCampionate >> this->_numarCampionate;
+						this->_campionate = new Campionat[this->_numarCampionate];
+						Campionat campionatAux;
+						for (int i = 0; i < this->_numarCampionate; i++) {
+							campionatAux.readFromTxtFile(finCampionate);
+							_campionate[i] = campionatAux;
+							cout << _campionate[i];
+						}
+						ok[i-1]++;
+					}
+				}
 			else
 				if (strstr(fisiere[i], "Club")) {}
 		}
@@ -1504,7 +1543,7 @@ public:
 			for (int i = 0; i < this->_numarProduse; i++) {
 				produsAux.readFromBinFile(finProduse);
 				this->_produse[i] = produsAux;
-				cout << _produse[i];
+				//cout << _produse[i];
 			}
 			finProduse.close();
 		}
@@ -1518,7 +1557,7 @@ public:
 			for (int i = 0; i < this->_numarTerenuri; i++) {
 				terenAux.readFromBinFile(finTerenuri);
 				this->_terenuri[i] = terenAux;
-				cout << _terenuri[i];
+				//cout << _terenuri[i];
 			}
 			finTerenuri.close();
 		}
@@ -1532,11 +1571,24 @@ public:
 			for (int i = 0; i < this->_numarJucatori; i++) {
 				jucatorAux.readFromBinFile(finJucatori);
 				this->_jucatori[i] = jucatorAux;
-				cout << _jucatori[i];
+				//cout << _jucatori[i];
 			}
 			finJucatori.close();
 		}
-		if (ok[3] == 0){}
+		if (ok[3] == 0){
+			finCampionate.open("CampionateBin.txt", ios::in | ios::binary);
+			finCampionate.read((char*)&this->_numarCampionate, sizeof(int));
+			cout << endl << this->_numarCampionate << " campionate: ";
+			cout << "\n--FISIER BIN\n";
+			this->_campionate = new Campionat[this->_numarCampionate];
+			Campionat campionatAux;
+			for (int i = 0; i < this->_numarCampionate; i++) {
+				campionatAux.readFromBinFile(finCampionate);
+				this->_campionate[i] = campionatAux;
+				//cout << _campionate[i];
+			}
+			finCampionate.close();
+		}
 		if (ok[4] == 0){}
 
 		
@@ -1943,14 +1995,14 @@ int main(int numarFisiere, char* fisiere[7])
 		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
 		GolfClub g3(g2);
 
-		//fstream fout("JucatoriBin.txt", ios::out | ios::binary);
-		//nt i = 4;
+		//fstream fout("CampionateBin.txt", ios::out | ios::binary);
+		//int i = 4;
 		//fout.write((char*)&i, sizeof(int));
 		//cout << i;
-		//j1.writeToBinFile(fout);
-		//j2.writeToBinFile(fout);
-		//j3.writeToBinFile(fout);
-		//j4.writeToBinFile(fout);
+		//c1.writeToBinFile(fout);
+		//c2.writeToBinFile(fout);
+		//c3.writeToBinFile(fout);
+		//c4.writeToBinFile(fout);
 		//p5.writeToBinFile(fout);
 		//fout.close();
 
@@ -1969,6 +2021,7 @@ int main(int numarFisiere, char* fisiere[7])
 		//cout << p5;
 		//p5.readFromBinFile(fin);
 		//cout << p5;
+		cout << numarFisiere;
 		Gestiune gst(numarFisiere,fisiere);
 		//cout << fisiere[1];
 		//cout << endl << sizeof(gst);
