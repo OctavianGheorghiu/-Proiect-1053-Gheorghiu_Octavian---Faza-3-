@@ -223,7 +223,7 @@ public:
 		return in;
 	}
 
-	void writeToFile(fstream& f) {
+	void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeProdus)+1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeProdus, lg);
@@ -236,7 +236,7 @@ public:
 			f.write((char*)&this->pret[i], sizeof(float));
 	}
 
-	void readFromFile(fstream& f) {
+	void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -458,7 +458,7 @@ public:
 		return in;
 	}
 
-	void writeToFile(fstream& f) {
+	void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeTeren) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeTeren,lg);
@@ -473,7 +473,7 @@ public:
 		}
 	}
 
-	void readFromFile(fstream& f) {
+	void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -722,7 +722,7 @@ public:
 		return in;
 	}
 
-	void writeToFile(fstream& f) {
+	void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeJucator) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeJucator, lg);
@@ -734,7 +734,7 @@ public:
 			f.write((char*)&this->locuri[i], sizeof(int));
 	}
 
-	void readFromFile(fstream& f) {
+	void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -992,22 +992,22 @@ public:
 		return in;
 	}
 
-	void writeToFile(fstream& f) {
+	void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeCampionat) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeCampionat, lg);
 		f.write((char*)&this->numarTerenuri, sizeof(int));
 		for (int i = 0; i < this->numarTerenuri; i++)
-			this->terenuri[i].writeToFile(f);
+			this->terenuri[i].writeToBinFile(f);
 		f.write((char*)&this->numarJucatori, sizeof(int));
 		for (int i = 0; i < this->numarJucatori; i++)
-			this->jucatori[i].writeToFile(f);
+			this->jucatori[i].writeToBinFile(f);
 		for (int i = 0; i < 3; i++)
 			f.write((char*)&this->premii[i], sizeof(int));
 		f.write((char*)&this->taxaInscriere, sizeof(int));
 	}
 
-	void readFromFile(fstream& f) {
+	void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -1022,13 +1022,13 @@ public:
 			delete[] this->terenuri;
 		this->terenuri = new Teren[this->numarTerenuri];
 		for (int i = 0; i < this->numarTerenuri; i++)
-			this->terenuri[i].readFromFile(f);
+			this->terenuri[i].readFromBinFile(f);
 		f.read((char*)&this->numarJucatori, sizeof(int));
 		if (this->jucatori != nullptr)
 			delete[] this->jucatori;
 		this->jucatori = new Jucator[this->numarJucatori];
 		for (int i = 0; i < this->numarJucatori; i++)
-			this->jucatori[i].readFromFile(f);
+			this->jucatori[i].readFromBinFile(f);
 		for (int i = 0; i < 3; i++)
 			f.read((char*)&this->premii[i], sizeof(int));
 		f.read((char*)&this->taxaInscriere, sizeof(int));
@@ -1295,7 +1295,7 @@ public:
 		return in;
 	}
 
-	void writeToFile(fstream& f) {
+	void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeClub) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeClub, lg);
@@ -1303,19 +1303,19 @@ public:
 		f.write((char*)&this->preturi[1], sizeof(int));
 		f.write((char*)&this->numarJucatori, sizeof(int));
 		for (int i = 0; i < this->numarJucatori; i++)
-			this->jucatori[i].writeToFile(f);
+			this->jucatori[i].writeToBinFile(f);
 		f.write((char*)&this->numarTerenuri, sizeof(int));
 		for (int i = 0; i < this->numarTerenuri; i++)
-			this->terenuri[i].writeToFile(f);
+			this->terenuri[i].writeToBinFile(f);
 		f.write((char*)&this->numarCampionate, sizeof(int));
 		for (int i = 0; i < this->numarCampionate; i++)
-			this->campionate[i].writeToFile(f);
+			this->campionate[i].writeToBinFile(f);
 		f.write((char*)&this->numarProduse, sizeof(int));
 		for (int i = 0; i < this->numarProduse; i++)
-			this->produse[i].writeToFile(f);
+			this->produse[i].writeToBinFile(f);
 	}
 
-	void readFromFile(fstream& f) {
+	void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -1332,25 +1332,25 @@ public:
 			delete[] this->jucatori;
 		this->jucatori = new Jucator[this->numarJucatori];
 		for (int i = 0; i < this->numarJucatori; i++)
-			this->jucatori[i].readFromFile(f);
+			this->jucatori[i].readFromBinFile(f);
 		f.read((char*)&this->numarTerenuri, sizeof(int));
 		if (this->terenuri != nullptr)
 			delete[] this->terenuri;
 		this->terenuri = new Teren[this->numarTerenuri];
 		for (int i = 0; i < this->numarTerenuri; i++)
-			this->terenuri[i].readFromFile(f);
+			this->terenuri[i].readFromBinFile(f);
 		f.read((char*)&this->numarCampionate, sizeof(int));
 		if (this->campionate != nullptr)
 			delete[] this->campionate;
 		this->campionate = new Campionat[this->numarCampionate];
 		for (int i = 0; i < this->numarCampionate; i++)
-			this->campionate[i].readFromFile(f);
+			this->campionate[i].readFromBinFile(f);
 		f.read((char*)&this->numarProduse, sizeof(int));
 		if (this->produse != nullptr)
 			delete[] this->produse;
 		this->produse = new ProdusGolf[this->numarProduse];
 		for (int i = 0; i < this->numarProduse; i++)
-			this->produse[i].readFromFile(f);
+			this->produse[i].readFromBinFile(f);
 	}
 
 	~GolfClub() {
@@ -1758,11 +1758,11 @@ int main()
 		GolfClub g3(g2);
 
 		fstream fout("fisier.txt", ios::out | ios::binary);
-		g2.writeToFile(fout);
+		g2.writeToBinFile(fout);
 		fout.close();
 		cout << g1;
 		fstream fin("fisier.txt", ios::in | ios::binary);
-		g1.readFromFile(fin);
+		g1.readFromBinFile(fin);
 		cout << g1;
 
 		break;
