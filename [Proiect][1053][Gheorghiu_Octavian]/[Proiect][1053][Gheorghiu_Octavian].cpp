@@ -790,6 +790,21 @@ public:
 			f.read((char*)&this->locuri[i], sizeof(int));
 	}
 
+	void readFromTxtFile(fstream& f) {
+		char aux[100];
+		f >> aux;
+		if (this->numeJucator != nullptr)
+			delete[]this->numeJucator;
+		this->numeJucator = new char[strlen(aux) + 1];
+		strcpy(this->numeJucator, aux);
+		f >> this->varsta;
+		for (int i = 0; i < 5; i++)
+			f >> this->mediePunctaj[i];
+		f >> this->numarCampionateJucate;
+		for (int i = 0; i < this->numarCampionateJucate; i++)
+			f >> this->locuri[i];
+	}
+
 	~Jucator() {
 		if (this->numeJucator != nullptr)
 			delete[]this->numeJucator;
@@ -1458,7 +1473,21 @@ public:
 					}
 				}
 			else
-				if (strstr(fisiere[i], "Jucator")) {}
+				if (strstr(fisiere[i], "Jucator")) {
+					finJucatori.open(fisiere[i], ios::in);
+					if (finJucatori.is_open()) {
+						cout << "\n--FISIER TXT\n";
+						finJucatori >> this->_numarJucatori;
+						this->_jucatori = new Jucator[this->_numarJucatori];
+						Jucator jucatorAux;
+						for (int i = 0; i < this->_numarJucatori; i++) {
+							jucatorAux.readFromTxtFile(finJucatori);
+							_jucatori[i] = jucatorAux;
+							cout << _jucatori[i];
+						}
+						ok[i - 1]++;
+					}
+				}
 			else
 				if (strstr(fisiere[i], "Campionat")) {}
 			else
@@ -1474,7 +1503,7 @@ public:
 			ProdusGolf produsAux;
 			for (int i = 0; i < this->_numarProduse; i++) {
 				produsAux.readFromBinFile(finProduse);
-				_produse[i] = produsAux;
+				this->_produse[i] = produsAux;
 				cout << _produse[i];
 			}
 			finProduse.close();
@@ -1488,12 +1517,25 @@ public:
 			Teren terenAux;
 			for (int i = 0; i < this->_numarTerenuri; i++) {
 				terenAux.readFromBinFile(finTerenuri);
-				_terenuri[i] = terenAux;
+				this->_terenuri[i] = terenAux;
 				cout << _terenuri[i];
 			}
-			finProduse.close();
+			finTerenuri.close();
 		}
-		if (ok[2] == 0){}
+		if (ok[2] == 0){
+			finJucatori.open("JucatoriBin.txt", ios::in | ios::binary);
+			finJucatori.read((char*)&this->_numarJucatori, sizeof(int));
+			cout <<endl << this->_numarJucatori << " jucatori: ";
+			cout << "\n--FISIER BIN\n";
+			this->_jucatori = new Jucator[this->_numarJucatori];
+			Jucator jucatorAux;
+			for (int i = 0; i < this->_numarJucatori; i++) {
+				jucatorAux.readFromBinFile(finJucatori);
+				this->_jucatori[i] = jucatorAux;
+				cout << _jucatori[i];
+			}
+			finJucatori.close();
+		}
 		if (ok[3] == 0){}
 		if (ok[4] == 0){}
 
@@ -1901,16 +1943,17 @@ int main(int numarFisiere, char* fisiere[7])
 		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
 		GolfClub g3(g2);
 
-		fstream fout("TerenuriBin.txt", ios::out | ios::binary);
-		int i = 4;
-		fout.write((char*)&i, sizeof(int));
+		//fstream fout("JucatoriBin.txt", ios::out | ios::binary);
+		//nt i = 4;
+		//fout.write((char*)&i, sizeof(int));
 		//cout << i;
-		t1.writeToBinFile(fout);
-		t2.writeToBinFile(fout);
-		t3.writeToBinFile(fout);
-		t4.writeToBinFile(fout);
+		//j1.writeToBinFile(fout);
+		//j2.writeToBinFile(fout);
+		//j3.writeToBinFile(fout);
+		//j4.writeToBinFile(fout);
 		//p5.writeToBinFile(fout);
-		fout.close();
+		//fout.close();
+
 		////cout << g1;
 		//fstream fin("ProduseBin.txt", ios::in | ios::binary);
 		//i=0;
