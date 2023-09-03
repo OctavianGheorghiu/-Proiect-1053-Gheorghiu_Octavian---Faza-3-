@@ -1,12 +1,24 @@
+//fisierele text care pot fi folosite ca parametri in cmd sunt:\
+Jucatori.txt Produse.txt Terenuri.txtB
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
+#include <set>
+#include <list>
+#include <map>
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable: 4996)
 using namespace std;
 
+class Abstract {
+public:
+	virtual void writeToBinFile(fstream& f) = 0;
+	virtual void readFromBinFile(fstream& f) = 0;
+};
 
-class ProdusGolf {
+
+class ProdusGolf:public Abstract {
 private:
 	static int idProdusCurent;
 	const int idProdus;
@@ -223,20 +235,20 @@ public:
 		return in;
 	}
 
-	void writeToBinFile(fstream& f) {
-		int lg = strlen(this->numeProdus)+1;
+	virtual void writeToBinFile(fstream& f) {
+		int lg = strlen(this->numeProdus) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeProdus, lg);
 		for (int i = 0; i < 3; i++)
 			f.write((char*)&this->vanzari[i], sizeof(float));
 		f.write((char*)&this->numarDimensiuni, sizeof(int));
-		for(int i=0;i<this->numarDimensiuni;i++)
+		for (int i = 0; i < this->numarDimensiuni; i++)
 			f.write((char*)&this->dimensiune[i], sizeof(float));
 		for (int i = 0; i < this->numarDimensiuni; i++)
 			f.write((char*)&this->pret[i], sizeof(float));
 	}
 
-	void readFromBinFile(fstream& f) {
+	virtual void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -261,6 +273,10 @@ public:
 			f.read((char*)&this->pret[i], sizeof(float));
 	}
 
+	virtual int numarOptiuni() {
+		return this->numarDimensiuni;
+	}
+
 	void readFromTxtFile(fstream& f) {
 		char aux[100];
 		f >> aux;
@@ -268,7 +284,7 @@ public:
 			delete[]this->numeProdus;
 		this->numeProdus = new char[strlen(aux) + 1];
 		strcpy(this->numeProdus, aux);
-		for (int i = 0; i < 3; i++) 
+		for (int i = 0; i < 3; i++)
 			f >> this->vanzari[i];
 		f >> this->numarDimensiuni;
 		this->dimensiune = new float[this->numarDimensiuni];
@@ -277,7 +293,7 @@ public:
 		this->pret = new float[this->numarDimensiuni];
 		for (int i = 0; i < this->numarDimensiuni; i++)
 			f >> this->pret[i];
- }
+	}
 
 	~ProdusGolf() {
 		if (this->numeProdus != nullptr)
@@ -290,8 +306,86 @@ public:
 };
 int ProdusGolf::idProdusCurent = 1;
 
-class Teren {
+class ManusiDeGolf :public ProdusGolf {
 private:
+	list<int> istoricAprovizionari;//cate produse au venit la ultimele 3 aprovizionari
+	map<string, int> inventar;//brand si numar bucati
+public:
+
+	ManusiDeGolf(){}
+
+	ManusiDeGolf(char* n, int nr, float* v, float* d, float* p, int* istoric, int numarBranduri, string* numeBrand, int* numarBucati ):ProdusGolf(n,nr,d,p,v){
+		for (int i = 0; i < 3; i++)
+			this->istoricAprovizionari.push_back(istoric[i]);
+		for (int i = 0; i < numarBranduri; i++)
+			inventar[numeBrand[i]] = numarBucati[i];
+	}
+
+	ManusiDeGolf(ProdusGolf p, int* istoric, int numarBranduri, string* numeBrand, int* numarBucati) :ProdusGolf(p) {
+		for (int i = 0; i < 3; i++)
+			this->istoricAprovizionari.push_back(istoric[i]);
+		for (int i = 0; i < numarBranduri; i++)
+			inventar[numeBrand[i]] = numarBucati[i];
+	}
+
+	ManusiDeGolf(const ManusiDeGolf& m) :ProdusGolf(m) {
+		this->istoricAprovizionari = m.istoricAprovizionari;
+		this->inventar = m.inventar;
+	}
+
+	ManusiDeGolf& operator=(const ManusiDeGolf& m) {
+		if (this != &m) {
+			this->istoricAprovizionari = m.istoricAprovizionari;
+			this->inventar = m.inventar;
+		}
+		return *this;
+	}
+
+	friend ostream& operator<<(ostream& out, ManusiDeGolf& m) {
+		out << (ProdusGolf)m;
+		list<int>::iterator it2;
+		out << "\nCate produse au venit la ultimele 3 aprovizionari: \n";
+		for (it2 = m.istoricAprovizionari.begin(); it2 != m.istoricAprovizionari.end(); it2++)
+			out << *it2 << " ";
+		out << "\nInventar: brand si numar bucati: \n";
+		map<string, int>::iterator it4;
+		for (it4 = m.inventar.begin(); it4 != m.inventar.end(); it4++)
+			cout << it4->first << " " << it4->second <<endl;
+		return out;
+	}
+
+	friend istream& operator>>(istream& in, ManusiDeGolf& m) {
+		in >> static_cast<ProdusGolf&>(m);
+		cout << "\nCate produse au venit la ultimele 3 aprovizionari: ";
+		int aux;
+		for (int i = 0; i < 3; i++) {
+			in >> aux;
+			m.istoricAprovizionari.push_back(aux);
+		}
+		string buffer;
+		cout << "\nCate branduri de manusi sunt: ";
+		in >> aux;
+		int n;
+		for (int i = 0; i < aux; i++) {
+			cout << "\nBrand: ";
+			in >> buffer;
+			cout << "\nNumar bucati: ";
+			in >> n;
+			m.inventar[buffer] = n;
+		}
+		return in;
+	}
+
+	virtual int numarOptiuni() {
+		int x = this->ProdusGolf::numarOptiuni() * inventar.size();
+		return x;
+	}
+
+	~ManusiDeGolf(){}
+};
+
+class Teren:public Abstract {
+public:
 	static int idTerenCurent;
 	const int idTeren;
 	char* numeTeren = nullptr;
@@ -476,10 +570,10 @@ public:
 		return in;
 	}
 
-	void writeToBinFile(fstream& f) {
+	virtual void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeTeren) + 1;
 		f.write((char*)&lg, sizeof(int));
-		f.write(this->numeTeren,lg);
+		f.write(this->numeTeren, lg);
 		for (int i = 0; i < 3; i++)
 			f.write((char*)&this->numarObstacole, sizeof(int));
 		f.write((char*)&this->par, sizeof(int));
@@ -491,7 +585,7 @@ public:
 		}
 	}
 
-	void readFromBinFile(fstream& f) {
+	virtual void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -542,7 +636,7 @@ public:
 };
 int Teren::idTerenCurent = 1;
 
-class Jucator {
+class Jucator:public Abstract {
 private:
 	static int idJucatorCurent;
 	const int idJucator;
@@ -757,19 +851,19 @@ public:
 		return in;
 	}
 
-	void writeToBinFile(fstream& f) {
+	virtual void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeJucator) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeJucator, lg);
 		f.write((char*)&this->varsta, sizeof(int));
-		for(int i=0;i<5;i++)
+		for (int i = 0; i < 5; i++)
 			f.write((char*)&this->mediePunctaj[i], sizeof(int));
 		f.write((char*)&this->numarCampionateJucate, sizeof(int));
-		for(int i=0;i<this->numarCampionateJucate;i++)
+		for (int i = 0; i < this->numarCampionateJucate; i++)
 			f.write((char*)&this->locuri[i], sizeof(int));
 	}
 
-	void readFromBinFile(fstream& f) {
+	virtual void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -780,7 +874,7 @@ public:
 		strcpy(this->numeJucator, buf);
 		delete[] buf;
 		f.read((char*)&this->varsta, sizeof(int));
-		for(int i=0;i<5;i++)
+		for (int i = 0; i < 5; i++)
 			f.read((char*)&this->mediePunctaj[i], sizeof(int));
 		f.read((char*)&this->numarCampionateJucate, sizeof(int));
 		if (this->locuri != nullptr)
@@ -801,8 +895,15 @@ public:
 		for (int i = 0; i < 5; i++)
 			f >> this->mediePunctaj[i];
 		f >> this->numarCampionateJucate;
+		if (this->locuri != nullptr)
+			delete[]this->locuri;
+		this->locuri = new int[this->numarCampionateJucate];
 		for (int i = 0; i < this->numarCampionateJucate; i++)
 			f >> this->locuri[i];
+	}
+
+	virtual float reducereAbnamentAnual() {
+		return 0;
 	}
 
 	~Jucator() {
@@ -814,7 +915,86 @@ public:
 };
 int Jucator::idJucatorCurent = 1;
 
-class Campionat {
+class Antrenor :public Jucator {
+private:
+	vector<int> numarClienti;//numarul de clienti in fiecare an de la inceputul carierei de antrenor
+	set<string> clienti;//clienti in ultima luna
+
+public:
+	Antrenor() {};
+
+	Antrenor(char* n, int v, int* m, int nr, int* l, int numarLuni, int* numarClienti, int numarUltimaLuna, string* clienti):Jucator(n,v,m,nr,l){
+		for (int i = 0; i < numarLuni; i++)
+			this->numarClienti.push_back(numarClienti[i]);
+		for (int i = 0; i < numarUltimaLuna; i++)
+			this->clienti.insert(clienti[i]);
+	}
+
+	Antrenor(Jucator j, int numarLuni, int* numarClienti, int numarUltimaLuna, string* clienti):Jucator(j){
+		for (int i = 0; i < numarLuni; i++)
+			this->numarClienti.push_back(numarClienti[i]);
+		for (int i = 0; i < numarUltimaLuna; i++)
+			this->clienti.insert(clienti[i]);
+	}
+
+	Antrenor(const Antrenor& a) :Jucator(a) {
+		//for (int i = 0; i != a.numarClienti.size(); i++)
+		//	this->numarClienti.push_back(a.numarClienti[i]);
+		//list<char*>::iterator it;
+		//for (it = a.clienti.begin(); it != a.clienti.end(); it++)
+			//this->clienti.push_back(*it);
+		this->numarClienti = a.numarClienti;
+		this->clienti = a.clienti;
+	}
+
+	Antrenor& operator=(const Antrenor& a) {
+		if (this != &a) {
+			this->numarClienti = a.numarClienti;
+			this->clienti = a.clienti;
+		}
+		return *this;
+	}
+
+	friend ostream& operator<<(ostream& out, const Antrenor& a) {
+		out << (Jucator)a;
+		out << "\nNumar de luni de activitate: " << a.numarClienti.size()<<endl;
+		for (int i = 0; i < a.numarClienti.size(); i++)
+			out << a.numarClienti[i] << " ";
+		out << endl;
+		set<string>::iterator it3;
+		cout << "Clienti luna curenta: " <<a.clienti.size()<<endl;
+		for (it3 = a.clienti.begin(); it3 != a.clienti.end(); it3++)
+			cout << *it3 << " ";
+		out << endl;
+		return out;
+	}
+
+	friend istream& operator>>(istream& in, Antrenor& a) {
+		in >> static_cast<Jucator&>(a);
+		cout << "\nNumar de luni de activitate: ";
+		int nr;
+		int aux;
+		in >> nr;
+		for (int i = 0; i < nr; i++) {
+			in >> aux;
+			a.numarClienti.push_back(aux);
+		}
+		cout << "\nNumar clienti luna curenta: ";
+		in >> nr;
+		string buffer;
+		for(int i = 0; i < nr; i++){
+			in >> buffer;
+			a.clienti.insert(buffer);
+		}
+		return in;
+	}
+
+	virtual float reducereAbonamenAnual() {
+		return this->clienti.size() * 5.74;
+	}
+};
+
+class Campionat:public Abstract {
 private:
 	char* numeCampionat = nullptr;
 	int premii[3] = { 10000,5000,3000 };
@@ -1042,7 +1222,7 @@ public:
 		return in;
 	}
 
-	void writeToBinFile(fstream& f) {
+	virtual void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeCampionat) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeCampionat, lg);
@@ -1057,7 +1237,7 @@ public:
 		f.write((char*)&this->taxaInscriere, sizeof(int));
 	}
 
-	void readFromBinFile(fstream& f) {
+	virtual void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -1094,19 +1274,18 @@ public:
 		f >> this->premii[0];
 		f >> this->premii[1];
 		f >> this->premii[2];
-		f >> this->taxaInscriere;
 		f >> this->numarTerenuri;
 		if (this->terenuri != nullptr)
 			delete[]this->terenuri;
 		this->terenuri = new Teren[this->numarTerenuri];
 		for (int i = 0; i < this->numarTerenuri; i++)
-			terenuri[i].readFromTxtFile(f);
+			this->terenuri[i].readFromTxtFile(f);
 		f >> this->numarJucatori;
 		if (this->jucatori != nullptr)
 			delete[]this->jucatori;
 		this->jucatori = new Jucator[this->numarJucatori];
 		for (int i = 0; i < this->numarJucatori; i++)
-			jucatori[i].readFromTxtFile(f);
+			this->jucatori[i].readFromTxtFile(f);
 	}
 
 	~Campionat() {
@@ -1118,7 +1297,7 @@ public:
 };
 int Campionat::taxaInscriere = 100;
 
-class GolfClub {
+class GolfClub:public Abstract {
 private:
 	static int idGolfClubCurent;
 	const int idGolfClub;
@@ -1370,7 +1549,7 @@ public:
 		return in;
 	}
 
-	void writeToBinFile(fstream& f) {
+	virtual void writeToBinFile(fstream& f) {
 		int lg = strlen(this->numeClub) + 1;
 		f.write((char*)&lg, sizeof(int));
 		f.write(this->numeClub, lg);
@@ -1390,7 +1569,7 @@ public:
 			this->produse[i].writeToBinFile(f);
 	}
 
-	void readFromBinFile(fstream& f) {
+	virtual void readFromBinFile(fstream& f) {
 		int lg = 0;
 		f.read((char*)&lg, sizeof(int));
 		char* buf = new char[lg];
@@ -1428,6 +1607,35 @@ public:
 			this->produse[i].readFromBinFile(f);
 	}
 
+	void readFromTxtFile(fstream& f) {
+		char aux[100];
+		f >> aux;
+		if (this->numeClub != nullptr)
+			delete[]this->numeClub;
+		this->numeClub = new char[strlen(aux) + 1];
+		strcpy(this->numeClub, aux);
+		f >> this->preturi[0];
+		f >> this->preturi[1];
+		f >> this->numarTerenuri;
+		if (this->terenuri != nullptr)
+			delete[]this->terenuri;
+		this->terenuri = new Teren[this->numarTerenuri];
+		for (int i = 0; i < this->numarTerenuri; i++)
+			this->terenuri[i].readFromTxtFile(f);
+		f >> this->numarJucatori;
+		if (this->jucatori != nullptr)
+			delete[]this->jucatori;
+		this->jucatori = new Jucator[this->numarJucatori];
+		for (int i = 0; i < this->numarJucatori; i++)
+			this->jucatori[i].readFromTxtFile(f);
+		f >> this->numarCampionate;
+		if (this->campionate != nullptr)
+			delete[]this->campionate;
+		this->campionate = new Campionat[this->numarCampionate];
+		for (int i = 0; i < this->numarCampionate; i++)
+			this->campionate[i].readFromTxtFile(f);
+	}
+
 	~GolfClub() {
 		if (this->numeClub != nullptr)
 			delete[]this->numeClub;
@@ -1443,7 +1651,6 @@ public:
 };
 int GolfClub::idGolfClubCurent = 1;
 
-
 class Gestiune {
 private:
 	int _numarProduse = 0;
@@ -1455,22 +1662,31 @@ private:
 	int _numarCampionate = 0;
 	Campionat* _campionate = nullptr;
 	int _numarCluburi = 0;
-	GolfClub* _cluburi= nullptr;
+	GolfClub* _cluburi = nullptr;
 	fstream finProduse;// ("Produse.txt", ios::in | ios::app);
 	fstream finTerenuri;// ("Terenuri.txt", ios::in);
 	fstream finJucatori;// ("Jucatori.txt", ios::in);
 	fstream finCampionate;// ("Campionate.txt", ios::in);
-	fstream finCluburi;// ("Cluburi.txt", ios::in);
+	fstream finGolfClub;// ("Cluburi.txt", ios::in);
+	fstream foutProduseBin;
+	fstream foutTerenuriBin;
+	fstream foutJucatoriBin;
+	fstream foutCampionateBin;
+	fstream foutGolfClubBin;
 public:
 	Gestiune(int numarFisiere, char** fisiere) {
 		int ok[5] = { 0,0,0,0,0 };
+
+		cout << "\nDatele aplicatiei sunt urmatoarele:\n\n";
+
 		if (numarFisiere > 1) {
 			for (int i = 1; i < numarFisiere; i++)
 				if (strstr(fisiere[i], "Produs")) {
 					finProduse.open(fisiere[i], ios::in);
 					if (finProduse.is_open()) {
-						cout << "\n--FISIER TXT\n";
 						finProduse >> this->_numarProduse;
+						cout << endl << "S-au inregistrat " << this->_numarProduse << " produse: ";
+						cout << "\nSURSA - FISIER TXT\n";
 						this->_produse = new ProdusGolf[this->_numarProduse];
 						ProdusGolf produsAux;
 						for (int i = 0; i < this->_numarProduse; i++) {
@@ -1478,66 +1694,69 @@ public:
 							_produse[i] = produsAux;
 							//cout << _produse[i];
 						}
-						ok[i-1]++;
+						ok[i - 1]++;
 					}
 				}
 			else
 				if (strstr(fisiere[i], "Teren")) {
-					finTerenuri.open(fisiere[i], ios::in);
-					if (finTerenuri.is_open()) {
-						cout << "\n--FISIER TXT\n";
-						finTerenuri >> this->_numarTerenuri;
-						this->_terenuri = new Teren[this->_numarTerenuri];
-						Teren terenAux;
-						for (int i = 0; i < this->_numarTerenuri; i++) {
-							terenAux.readFromTxtFile(finTerenuri);
-							_terenuri[i] = terenAux;
-							//cout << _terenuri[i];
+						finTerenuri.open(fisiere[i], ios::in);
+						if (finTerenuri.is_open()) {
+							finTerenuri >> this->_numarTerenuri;
+							cout << endl << "S-au inregistrat " << this->_numarTerenuri << " terenuri: ";
+							cout << "\nSURSA - FISIER TXT\n";
+							this->_terenuri = new Teren[this->_numarTerenuri];
+							Teren terenAux;
+							for (int i = 0; i < this->_numarTerenuri; i++) {
+								terenAux.readFromTxtFile(finTerenuri);
+								_terenuri[i] = terenAux;
+								//cout << _terenuri[i];
+							}
+							ok[i - 1]++;
 						}
-						ok[i-1]++;
 					}
-				}
 			else
 				if (strstr(fisiere[i], "Jucator")) {
-					finJucatori.open(fisiere[i], ios::in);
-					if (finJucatori.is_open()) {
-						cout << "\n--FISIER TXT\n";
-						finJucatori >> this->_numarJucatori;
-						this->_jucatori = new Jucator[this->_numarJucatori];
-						Jucator jucatorAux;
-						for (int i = 0; i < this->_numarJucatori; i++) {
-							jucatorAux.readFromTxtFile(finJucatori);
-							_jucatori[i] = jucatorAux;
-							//cout << _jucatori[i];
+							finJucatori.open(fisiere[i], ios::in);
+							if (finJucatori.is_open()) {
+								finJucatori >> this->_numarJucatori;
+								cout << endl << "S-au inregistrat " << this->_numarJucatori << " jucatori: ";
+								cout << "\nSURSA - FISIER TXT\n";
+								this->_jucatori = new Jucator[this->_numarJucatori];
+								Jucator jucatorAux;
+								for (int i = 0; i < this->_numarJucatori; i++) {
+									jucatorAux.readFromTxtFile(finJucatori);
+									_jucatori[i] = jucatorAux;
+									//cout << _jucatori[i];
+								}
+								ok[i - 1]++;
+							}
 						}
-						ok[i-1]++;
-					}
-				}
 			else
 				if (strstr(fisiere[i], "Campionat")) {
-					finCampionate.open(fisiere[i], ios::in);
-					if (finCampionate.is_open()) {
-						cout << "\n--FISIER TXT\n";
-						finCampionate >> this->_numarCampionate;
-						this->_campionate = new Campionat[this->_numarCampionate];
-						Campionat campionatAux;
-						for (int i = 0; i < this->_numarCampionate; i++) {
-							campionatAux.readFromTxtFile(finCampionate);
-							_campionate[i] = campionatAux;
-							cout << _campionate[i];
-						}
-						ok[i-1]++;
-					}
-				}
+								/*finCampionate.open(fisiere[i], ios::in);
+								if (finCampionate.is_open()) {
+									finCampionate >> this->_numarCampionate;
+									cout << endl << this->_numarCampionate << " campionate: ";
+									cout << "\n--FISIER TXT\n";
+									this->_campionate = new Campionat[this->_numarCampionate];
+									Campionat campionatAux;
+									for (int i = 0; i < this->_numarCampionate; i++) {
+										campionatAux.readFromTxtFile(finCampionate);
+										_campionate[i] = campionatAux;
+										cout << _campionate[i];
+									}
+									ok[i - 1]++;
+								}*/
+							}
 			else
-				if (strstr(fisiere[i], "Club")) {}
+				if (strstr(fisiere[i], "GolfClub")) {}
 		}
-			
+
 		if (ok[0] == 0) {
 			finProduse.open("ProduseBin.txt", ios::in | ios::binary);
 			finProduse.read((char*)&this->_numarProduse, sizeof(int));
-			cout <<endl << this->_numarProduse << " produse: ";
-			cout << "\n--FISIER BIN\n";
+			cout << endl << "S-au inregistrat " << this->_numarProduse << " produse: ";
+			cout << "\nSURSA - FISIER BINAR\n";
 			this->_produse = new ProdusGolf[this->_numarProduse];
 			ProdusGolf produsAux;
 			for (int i = 0; i < this->_numarProduse; i++) {
@@ -1547,11 +1766,11 @@ public:
 			}
 			finProduse.close();
 		}
-		if (ok[1] == 0){
+		if (ok[1] == 0) {
 			finTerenuri.open("TerenuriBin.txt", ios::in | ios::binary);
 			finTerenuri.read((char*)&this->_numarTerenuri, sizeof(int));
-			cout <<endl << this->_numarTerenuri << " terenuri: ";
-			cout << "\n--FISIER BIN\n";
+			cout << endl << "S-au inregistrat " << this->_numarTerenuri << " terenuri: ";
+			cout << "\nSURSA - FISIER BINAR\n";
 			this->_terenuri = new Teren[this->_numarTerenuri];
 			Teren terenAux;
 			for (int i = 0; i < this->_numarTerenuri; i++) {
@@ -1561,11 +1780,11 @@ public:
 			}
 			finTerenuri.close();
 		}
-		if (ok[2] == 0){
+		if (ok[2] == 0) {
 			finJucatori.open("JucatoriBin.txt", ios::in | ios::binary);
 			finJucatori.read((char*)&this->_numarJucatori, sizeof(int));
-			cout <<endl << this->_numarJucatori << " jucatori: ";
-			cout << "\n--FISIER BIN\n";
+			cout << endl << "S-au inregistrat " << this->_numarJucatori << " jucatori: ";
+			cout << "\nSURSA - FISIER BINAR\n";
 			this->_jucatori = new Jucator[this->_numarJucatori];
 			Jucator jucatorAux;
 			for (int i = 0; i < this->_numarJucatori; i++) {
@@ -1575,11 +1794,11 @@ public:
 			}
 			finJucatori.close();
 		}
-		if (ok[3] == 0){
+		if (ok[3] == 0) {
 			finCampionate.open("CampionateBin.txt", ios::in | ios::binary);
 			finCampionate.read((char*)&this->_numarCampionate, sizeof(int));
-			cout << endl << this->_numarCampionate << " campionate: ";
-			cout << "\n--FISIER BIN\n";
+			cout << endl << "S-au inregistrat " << this->_numarCampionate << " campionate: ";
+			cout << "\nSURSA - FISIER BINAR\n";
 			this->_campionate = new Campionat[this->_numarCampionate];
 			Campionat campionatAux;
 			for (int i = 0; i < this->_numarCampionate; i++) {
@@ -1589,10 +1808,107 @@ public:
 			}
 			finCampionate.close();
 		}
-		if (ok[4] == 0){}
+		if (ok[4] == 0) {
+			finGolfClub.open("GolfClubBin.txt", ios::in | ios::binary);
+			finGolfClub.read((char*)&this->_numarCluburi, sizeof(int));
+			cout << endl << "S-au inregistrat " << this->_numarCluburi << " Cluburi: ";
+			cout << "\nSURSA - FISIER BINAR\n";
+			this->_cluburi = new GolfClub[this->_numarCluburi];
+			GolfClub golfClubAux;
+			for (int i = 0; i < this->_numarCluburi; i++) {
+				golfClubAux.readFromBinFile(finGolfClub);
+				this->_cluburi[i] = golfClubAux;
+				//cout << _cluburi[i];
+			}
+			finGolfClub.close();
+		}
 
-		
 	}
+
+	void ierarhieProfit() {
+		ProdusGolf aux;
+		for (int i = 0; i < this->_numarProduse-1; i++)
+			for(int j =i+1;j<this->_numarProduse;j++)
+				if (this->_produse[i].profitProdus() < this->_produse[j].profitProdus()) {
+					aux = this->_produse[i];
+					this->_produse[i] = this->_produse[j];
+					this->_produse[j] = aux;
+				}
+		for (int i = 0; i < this->_numarProduse; i++) {
+			cout << endl << endl << _produse[i].profitProdus() << " profit";
+			cout << this->_produse[i];
+		}
+	}
+
+	void ierarhieObstacole() {
+		Teren aux;
+		for (int i = 0; i < this->_numarTerenuri - 1; i++)
+			for (int j = i + 1; j < this->_numarTerenuri; j++)
+				if (this->_terenuri[i].numarTotalObstacole() < this->_terenuri[j].numarTotalObstacole()) {
+					aux = this->_terenuri[i];
+					this->_terenuri[i] = this->_terenuri[j];
+					this->_terenuri[j] = aux;
+				}
+		for (int i = 0; i < this->_numarTerenuri; i++) {
+			cout << endl << endl << _terenuri[i].numarTotalObstacole() << " obstacole";
+			cout << this->_terenuri[i];
+		}
+	}
+
+	void afisProduse() {
+		for (int i = 0; i < this->_numarProduse; i++)
+			cout << this->_produse[i];
+	}
+
+	void afisTerenuri() {
+		for (int i = 0; i < this->_numarTerenuri; i++)
+			cout << this->_terenuri[i];
+	}
+
+	void afisJucatori() {
+		for (int i = 0; i < this->_numarJucatori; i++)
+			cout << this->_jucatori[i];
+	}
+
+	void afisCampionate() {
+		for (int i = 0; i < this->_numarCampionate; i++)
+			cout << this->_campionate[i];
+	}
+
+	void afisCluburi() {
+		for (int i = 0; i < this->_numarCluburi; i++)
+			cout << this->_cluburi[i];
+	}
+
+	void saveToBin() {
+		fstream foutProduseBin("backupProdus.txt", ios::out | ios::binary);
+		for (int i = 0; i < this->_numarProduse; i++)
+			this->_produse[i].writeToBinFile(foutProduseBin);
+		foutProduseBin.close();
+	
+		fstream foutTerenuriBin("backupTerenuri.txt", ios::out | ios::binary);
+		for (int i = 0; i < this->_numarTerenuri; i++)
+			this->_terenuri[i].writeToBinFile(foutTerenuriBin);
+		foutTerenuriBin.close();
+
+		fstream foutJucatoriBin("backupJucatori.txt", ios::out | ios::binary);
+		for (int i = 0; i < this->_numarJucatori; i++)
+			this->_jucatori[i].writeToBinFile(foutJucatoriBin);
+		foutJucatoriBin.close();
+
+		fstream foutCampionateBin("backupCampionate.txt", ios::out | ios::binary);
+		for (int i = 0; i < this->_numarCampionate; i++)
+			this->_campionate[i].writeToBinFile(foutCampionateBin);
+		foutCampionateBin.close();
+
+		fstream foutGolfClubBin("backupGolfClub.txt", ios::out | ios::binary);
+		for (int i = 0; i < this->_numarCluburi; i++)
+			this->_cluburi[i].writeToBinFile(foutGolfClubBin);
+		foutGolfClubBin.close();
+	
+	}
+
+
 	~Gestiune() {
 		if (this->_produse != nullptr)
 			delete[]this->_produse;
@@ -1609,428 +1925,104 @@ public:
 
 int main(int numarFisiere, char* fisiere[7])
 {
-	int optiune = 0;
-	cout << "Alegeti clasa:\n1.ProdusGolf.\n2.Teren.\n3.Jucator.\n4.Campionat.\n5.GolfClub.\n\nClasa nr.: ";
-	cin >> optiune;
-	switch (optiune)
-	{
-	case 1: {
-		cout << "\n\n--------------------------------\n\tClasa ProdusGolf";
-		char numeProdus1[20];
-		strcpy(numeProdus1, "masinuta de golf");
-		ProdusGolf p1(numeProdus1);
-		cout << p1;
-		char numeProdus2[20];
-		strcpy(numeProdus2, "minge de golf");
-		float vanzari[3] = { 230,400,150 };
-		float dimensiuni[3] = { 1,2,3 };
-		float pret[3] = { 5.5,10,14.5 };
-		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
-		cout << p2;
-		ProdusGolf p3(p2);
-		cout << p3;
-		char numeProdus3[20];
-		strcpy(numeProdus3, "crosa de golf");
-		float vanzari2[3] = { 500,450,700 };
-		float dimensiuni2[4] = { 4,6,8,12 };
-		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
-		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
-		cout << p4;
-		ProdusGolf p5;
-		//cout << p5;
-		//cin >> p5;
-		//cout << p5;
-		//p1 = p5;
-		//cout << p1;
-		char numeNou[20] = "Masina de golf";
-		p1.setNumeProdus(numeNou);
-		cout << p1;
-		cout << p2.profitProdus() << endl;
-		cout << p4.profitProdus() << endl;
-		if (p2 > p4)
-			cout << p2.profitProdus() << endl;
-		else
-			cout << p4.profitProdus() << endl;
-		cout << p2[2];
-		p2++;
-		cout << p2;
-		float ultimaVanzare = 0;
-		ultimaVanzare = (float)p2;
-		cout << ultimaVanzare;
-		cout << p3 + 333;
-		break;
+	int optiune = -1;
+
+	Gestiune gst(numarFisiere, fisiere);
+
+	cout << "\n\n\nAlegeti comanda:\n1.Lista produse.\n2.Lista terenuri.\n3.Lista jucatori.\n4.Lista campionate.\n5.Lista cluburi.\n6.Top profit produse\n7.Top numar obstacole terenuri\n8.Salvare date in fisiere binare\n9.Testare clase derivate.\n0.Exit\nComanda nr.: ";
+	while (optiune != 0) {
+		cin >> optiune;
+		switch (optiune)
+		{
+		case 1: {
+			gst.afisProduse();
+			cout << "\n\n\n";
+		}
+
+		case 2: {
+			gst.afisTerenuri();
+			cout << "\n\n\n";
+		}
+
+		case 3: {
+			gst.afisJucatori();
+			cout << "\n\n\n";
+		}
+
+		case 4: {
+			gst.afisCampionate();
+			cout << "\n\n\n";
+		}
+
+		case 5: {
+			gst.afisCluburi();
+			cout << "\n\n";
+		}
+
+		case 6: {
+			gst.ierarhieProfit();
+			cout << "\n\n\n";
+		}
+
+		case 7: {
+			gst.ierarhieObstacole();
+			cout << "\n\n\n";
+		}
+
+		case 8: {
+			gst.saveToBin();
+			cout << "\n\n\n";
+		}
+
+		case 9: {
+			//set si vector
+			int v[2] = { 0 };
+			string n[2];
+			n[0] = "Margareta";
+			n[1] = "Ionel";
+			//cout << n[0] << n[1];
+			char nume[10];
+			strcpy(nume, "Ion");
+			int punct[5] = { 1,2,3,4,5 };
+			Jucator j1(nume, 22, punct, 2, punct);
+			Antrenor a1(j1, 3, punct, 2, n);
+			Antrenor a2;
+			Antrenor a3(a1);
+			cout << a3;
+			//cin >> a2;
+			cout << a1 << endl;
+			cout << "Aceasta persoana are o reducere la abonamentul anual de: " << a1.reducereAbonamenAnual() << " lei.";
+
+			//list si map
+			char numeProdus2[20];
+			strcpy(numeProdus2, "minge de golf");
+			float vanzari[3] = { 230,400,150 };
+			float dimensiuni[3] = { 1,2,3 };
+			float pret[3] = { 5.5,10,14.5 };
+			ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
+			int istoric[3] = { 10,12,15 };
+			string branduri[2];
+			branduri[0] = "Chanel";
+			branduri[1] = "Dior";
+			int bucati[2] = { 5,9 };
+			ManusiDeGolf m1(p2, istoric, 2, branduri, bucati);
+			//cin >> m1;
+			cout << m1;
+			cout << "\nAcest produs are " << m1.numarOptiuni() << " optiuni de cumparare.";
+		}
+
+		case 0: {
+			break;
+		}
+
+		default: {
+			cout << "\nNu ati ales o optiune buna.\n";
+
+		}
+
+		}
+		cout << "\n\nAlegeti comanda:\n1.Lista produse.\n2.Lista terenuri.\n3.Lista jucatori.\n4.Lista campionate.\n5.Lista cluburi.\n6.Top profit produse\n7.Top numar obstacole terenuri\n8.Salvare date in fisiere binare\n0.Exit\nComanda nr.: ";
 	}
-	case 2: {
-		Teren t1;
-		cout << t1;
-		char numeTeren1[20];
-		strcpy(numeTeren1, "Valea regilor");
-		int numarObstacole1[3] = { 1,0,3 };
-		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
-		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
-		cout << t2;
-		Teren t3(t2);
-		cout << t3;
-		t3 = t2;
-		t3++;
-		cout << t3;
-		t3 += "Vlad";
-		cout << t3;
-		Teren t4;
-		//cin >> t4;
-		//cout << t4;
-		cout << "\n\nNumar total obstacole pe terenul " << t3.getNumeTeren() << " este  de: " << t3.numarTotalObstacole();
-		if (!t2)
-			cout << endl << "nu a reusit nimeni hole in 1";
-		else
-			cout << endl << "Pe acest teren s-a dat hole in 1";
-		int obstacoleNisip = t4[1];
-		cout << endl << obstacoleNisip;
-		int numarTotal = (int)t2;
-		cout << endl << numarTotal;
-		cout << endl;
-		break;
-	}
-	case 3: {
-		Jucator j1;
-		cout << j1;
-		char numeJucator1[30];
-		strcpy(numeJucator1, "John Alexander");
-		int mediePunctaj1[5] = { 3,5,2,0,0 };
-		int locuri[4] = { 14,16,9,11 };
-		Jucator j2(numeJucator1, 21, mediePunctaj1, 4, locuri);
-		Jucator j3(j2);
-		cout << j2;
-		cout << j3;
-		j1 = j2;
-		cout << j1;
-		Jucator j4;
-		//cin >> j4;
-		cout << j4;
-		if (!j4)
-			cout << endl << "Nu este complet jucatorul cu id-ul " << j4.getIdJucator();
-		int maxim = j2.locMaxim();
-		cout << endl << maxim;
-		char nume2[20];
-		strcpy(nume2, "Valeriu");
-		j4.setNumeJucator(nume2);
-		if (j2 > j4)
-			cout << endl << j2.getNumeJucator() << "are un rezultat mai bun decat " << j4.getNumeJucator() << endl;
-		j4++;
-		j4 += 4;
-		cout << j4;
-		int ultimaMedie = (int)j2;
-		cout << endl << ultimaMedie;
-		cout << endl << j2[2];
-		break;
-	}
-	case 4: {
-		cout << "\n\n--------------------------------\n\tClasa Campionat";
-		//Teren
 
-		Teren t1;
-		char numeTeren1[20];
-		strcpy(numeTeren1, "Valea regilor");
-		int numarObstacole1[3] = { 1,0,3 };
-		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
-		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
-		Teren t3(t2);
-		t3++;
-		t3 += "Vlad";
-		Teren t4;
-
-		//ProdusGolf
-
-		char numeProdus1[20];
-		strcpy(numeProdus1, "masinuta de golf");
-		ProdusGolf p1(numeProdus1);
-		char numeProdus2[20];
-		strcpy(numeProdus2, "minge de golf");
-		float vanzari[3] = { 230,400,150 };
-		float dimensiuni[3] = { 1,2,3 };
-		float pret[3] = { 5.5,10,14.5 };
-		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
-		ProdusGolf p3(p2);
-		char numeProdus3[20];
-		strcpy(numeProdus3, "crosa de golf");
-		float vanzari2[3] = { 500,450,700 };
-		float dimensiuni2[4] = { 4,6,8,12 };
-		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
-		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
-		ProdusGolf p5;
-		char numeNou[20] = "Masina de golf";
-		p1.setNumeProdus(numeNou);
-
-		//Jucaor
-
-		Jucator j1;
-		char numeJucator1[30];
-		strcpy(numeJucator1, "John Alexander");
-		int mediePunctaj1[5] = { 3,5,2,0,0 };
-		int locuri[4] = { 14,16,9,11 };
-		Jucator j2(numeJucator1, 21, mediePunctaj1, 4, locuri);
-		Jucator j3(j2);
-		j1 = j2;
-		Jucator j4;
-		j4++;
-		j4 += 4;
-
-		//campionat
-		char numeCampionat1[20];
-		strcpy(numeCampionat1, "Cupa amatorilor");
-		Campionat c1(numeCampionat1);
-
-		Teren terenuri1[2] = { t1,t2 };
-		Jucator jucatori1[2] = { j1,j2 };
-		int premii[3] = { 20000,10000,5000 };
-		char numeCampionat2[20];
-		strcpy(numeCampionat2, "Cupa mare");
-		Campionat c2(numeCampionat2, 2, terenuri1, 2, jucatori1, premii);
-
-		cout << c1;
-		cout << c2;
-		Campionat c3(c2);
-		cout << endl << c3.getPremiiTotale();
-		c3 += 200;
-		cout << endl << c3.getPremiiTotale();
-		if (c2 > c1)
-			cout << endl << "campionatul cu premiile cele mai mari este: " << c2.getNumeCampionat() << endl;
-		else
-			cout << endl << "campionatul cu premiile cele mai mari este: " << c1.getNumeCampionat() << endl;
-		char numeCampionat3[20];
-		strcpy(numeCampionat3, "Cupa Intermediara");
-		Campionat c4(numeCampionat3);
-		//cin >> c4;
-		//cout << endl << c4 << endl;
-		if (!c4)
-			cout << "\n\nNu s-a inscris nimeni la cupa " << c4.getNumeCampionat();
-		cout << c2[1];
-		cout << "\n\nprima persoana inscrisa este: " << (Jucator)c2;
-		c1.addParticipant(j3);
-		cout << c1;
-
-		cout << endl;
-
-		break;
-	}
-	case 5: {
-		cout << "\n\n--------------------------------\n\tClasa GolfClub";
-		//Teren
-
-		Teren t1;
-		char numeTeren1[20];
-		strcpy(numeTeren1, "Valea regilor");
-		int numarObstacole1[3] = { 1,0,3 };
-		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
-		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
-		Teren t3(t2);
-		t3++;
-		t3 += "Vlad";
-		Teren t4;
-
-		//ProdusGolf
-
-		char numeProdus1[20];
-		strcpy(numeProdus1, "masinuta de golf");
-		ProdusGolf p1(numeProdus1);
-		char numeProdus2[20];
-		strcpy(numeProdus2, "minge de golf");
-		float vanzari[3] = { 230,400,150 };
-		float dimensiuni[3] = { 1,2,3 };
-		float pret[3] = { 5.5,10,14.5 };
-		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
-		ProdusGolf p3(p2);
-		char numeProdus3[20];
-		strcpy(numeProdus3, "crosa de golf");
-		float vanzari2[3] = { 500,450,700 };
-		float dimensiuni2[4] = { 4,6,8,12 };
-		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
-		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
-		ProdusGolf p5;
-		char numeNou[20] = "Masina de golf";
-		p1.setNumeProdus(numeNou);
-
-		//Jucaor
-
-		Jucator j1;
-		char numeJucator1[30];
-		strcpy(numeJucator1, "John Alexander");
-		int mediePunctaj1[5] = { 3,5,2,0,0 };
-		int locuri[4] = { 14,16,9,11 };
-		Jucator j2(numeJucator1, 21, mediePunctaj1, 4, locuri);
-		Jucator j3(j2);
-		j1 = j2;
-		Jucator j4;
-		j4++;
-		j4 += 4;
-
-
-		//Campionat
-
-		char numeCampionat1[20];
-		strcpy(numeCampionat1, "Cupa amatorilor");
-		Campionat c1(numeCampionat1);
-		Teren terenuri1[2] = { t1,t2 };
-		Jucator jucatori1[2] = { j1,j2 };
-		int premii[3] = { 20000,10000,5000 };
-		char numeCampionat2[20];
-		strcpy(numeCampionat2, "Cupa mare");
-		Campionat c2(numeCampionat2, 2, terenuri1, 2, jucatori1, premii);
-		Campionat c3(c2);
-		c3 += 200;
-		char numeCampionat3[20];
-		strcpy(numeCampionat3, "Cupa Intermediara");
-		Campionat c4(numeCampionat3);
-		c1.addParticipant(j3);
-
-		//GolfClub
-
-		GolfClub g1;
-		char numeClub1[20];
-		strcpy(numeClub1, "Golfers");
-		Teren terenuri2[3] = { t1,t2,t3 };
-		Jucator jucatori2[2] = { j2,j4 };
-		Campionat campionate1[2] = { c2,c3 };
-		ProdusGolf produse1[2] = { p1,p2 };
-		int preturi[2] = { 60,550 };
-		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
-		GolfClub g3(g2);
-		g3 = g2;
-		cout << g1;
-		cout << g2;
-		g1++;
-		if (g1 > g2)
-			cout << endl << "g1>g2";
-		else
-			cout << endl << "g1<g2";
-
-		if (!g1)
-			cout << "clubul g1 nu are membri";
-
-		cout << "\n\nprimul teren din clubul de golf este: " << (Teren)g2;
-		//cin >> g1;
-		//cout << g1;
-		break;
-	}
-	case 6: {
-
-		//Teren
-
-		Teren t1;
-		char numeTeren1[20];
-		strcpy(numeTeren1, "Valea regilor");
-		int numarObstacole1[3] = { 1,0,3 };
-		string numeSportivi[3] = { "Tom Ford","Alexander","Mathew" };
-		Teren t2(numeTeren1, 5, numarObstacole1, 3, numeSportivi);
-		Teren t3(t2);
-		t3++;
-		t3 += "Vlad";
-		Teren t4;
-
-		//ProdusGolf
-
-		char numeProdus1[20];
-		strcpy(numeProdus1, "masinuta de golf");
-		ProdusGolf p1(numeProdus1);
-		char numeProdus2[20];
-		strcpy(numeProdus2, "minge de golf");
-		float vanzari[3] = { 230,400,150 };
-		float dimensiuni[3] = { 1,2,3 };
-		float pret[3] = { 5.5,10,14.5 };
-		ProdusGolf p2(numeProdus2, 3, dimensiuni, pret, vanzari);
-		ProdusGolf p3(p2);
-		char numeProdus3[20];
-		strcpy(numeProdus3, "crosa de golf");
-		float vanzari2[3] = { 500,450,700 };
-		float dimensiuni2[4] = { 4,6,8,12 };
-		float pret2[4] = { 52.6, 66.3, 80, 99.9 };
-		ProdusGolf p4(numeProdus3, 4, dimensiuni2, pret2, vanzari2);
-		ProdusGolf p5;
-		char numeNou[20] = "Masina de golf";
-		p1.setNumeProdus(numeNou);
-
-		//Jucaor
-
-		Jucator j1;
-		char numeJucator1[30];
-		strcpy(numeJucator1, "John Alexander");
-		int mediePunctaj1[5] = { 3,5,2,0,0 };
-		int locuri[4] = { 14,16,9,11 };
-		Jucator j2(numeJucator1, 21, mediePunctaj1, 4, locuri);
-		Jucator j3(j2);
-		j1 = j2;
-		Jucator j4;
-		j4++;
-		j4 += 4;
-
-
-		//Campionat
-
-		char numeCampionat1[20];
-		strcpy(numeCampionat1, "Cupa amatorilor");
-		Campionat c1(numeCampionat1);
-		Teren terenuri1[2] = { t1,t2 };
-		Jucator jucatori1[2] = { j1,j2 };
-		int premii[3] = { 20000,10000,5000 };
-		char numeCampionat2[20];
-		strcpy(numeCampionat2, "Cupa mare");
-		Campionat c2(numeCampionat2, 2, terenuri1, 2, jucatori1, premii);
-		Campionat c3(c2);
-		c3 += 200;
-		char numeCampionat3[20];
-		strcpy(numeCampionat3, "Cupa Intermediara");
-		Campionat c4(numeCampionat3);
-		c1.addParticipant(j3);
-
-		//GolfClub
-
-		GolfClub g1;
-		char numeClub1[20];
-		strcpy(numeClub1, "Golfers");
-		Teren terenuri2[3] = { t1,t2,t3 };
-		Jucator jucatori2[2] = { j2,j4 };
-		Campionat campionate1[2] = { c2,c3 };
-		ProdusGolf produse1[2] = { p1,p2 };
-		int preturi[2] = { 60,550 };
-		GolfClub g2(numeClub1, preturi, 2, jucatori2, 3, terenuri2, 2, campionate1, 2, produse1);
-		GolfClub g3(g2);
-
-		//fstream fout("CampionateBin.txt", ios::out | ios::binary);
-		//int i = 4;
-		//fout.write((char*)&i, sizeof(int));
-		//cout << i;
-		//c1.writeToBinFile(fout);
-		//c2.writeToBinFile(fout);
-		//c3.writeToBinFile(fout);
-		//c4.writeToBinFile(fout);
-		//p5.writeToBinFile(fout);
-		//fout.close();
-
-		////cout << g1;
-		//fstream fin("ProduseBin.txt", ios::in | ios::binary);
-		//i=0;
-		//fin.read((char*)&i, sizeof(int));
-		//cout << i;
-		//p5.readFromBinFile(fin);
-		//cout << p5;
-		//p5.readFromBinFile(fin);
-		//cout << p5;
-		//p5.readFromBinFile(fin);
-		//cout << p5;
-		//p5.readFromBinFile(fin);
-		//cout << p5;
-		//p5.readFromBinFile(fin);
-		//cout << p5;
-		cout << numarFisiere;
-		Gestiune gst(numarFisiere,fisiere);
-		//cout << fisiere[1];
-		//cout << endl << sizeof(gst);
-		break;
-	}
-	default: {
-		cout << "Nu ai ales o clasa de intre 1-5.";
-		break;
-	}
-	}
 	return 0;
 }
