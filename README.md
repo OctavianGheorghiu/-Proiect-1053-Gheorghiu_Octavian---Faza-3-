@@ -4,7 +4,7 @@ A simple golf club management system, exemplifying the fundamental principles of
 
 ## How to use the app.
 
-After creating the .exe file the app can be run with the option of specifying the source files.
+After creating the .exe file the app can be run in the CMD with the option of specifying the source files.
 
 ### Run Command example:
 
